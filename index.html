@@ -2,28 +2,24 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Строительство частных домов — Корпорация РС</title>
   <meta name="description" content="Корпорация РС — строительство частных домов в Москве и Московской области. Компания работает с 2009 года и представлена на Строим.дом.рф." />
   <meta name="robots" content="index,follow,max-image-preview:large" />
-  <meta name="theme-color" content="#1b241f" />
-  <link rel="canonical" href="https://texas359-art.github.io/-corporation-rs-site/" />
+  <meta name="theme-color" content="#17201b" />
+  <link rel="canonical" href="https://texas359-art.github.io/corporation-rs-site/" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="ru_RU" />
   <meta property="og:site_name" content="Корпорация РС" />
   <meta property="og:title" content="Строительство частных домов — Корпорация РС" />
-  <meta property="og:description" content="Строительство частных домов в Москве и Московской области. Компания работает с 2009 года и представлена на Строим.дом.рф." />
-  <meta property="og:url" content="https://texas359-art.github.io/-corporation-rs-site/" />
+  <meta property="og:description" content="Строительство частных домов в Москве и Московской области. С 2009 года." />
+  <meta property="og:url" content="https://texas359-art.github.io/corporation-rs-site/" />
   <meta property="og:image" content="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.webp" />
-  <meta property="og:image:alt" content="Архитектурная визуализация проекта Простор RS 8×8" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Строительство частных домов — Корпорация РС" />
-  <meta name="twitter:description" content="Частные дома для постоянной жизни в Москве и Московской области." />
-  <meta name="twitter:image" content="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.webp" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Prata&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script type="application/ld+json">
   {
@@ -34,229 +30,211 @@
     "foundingDate":"2009-03-17",
     "telephone":"+79255007779",
     "email":"Info@corp-rs.ru",
+    "url":"https://texas359-art.github.io/corporation-rs-site/",
     "address":{
       "@type":"PostalAddress",
       "postalCode":"109044",
       "addressLocality":"Москва",
       "streetAddress":"Воронцовский переулок, д. 5/7, помещ. 1/П",
       "addressCountry":"RU"
-    }
+    },
+    "areaServed":["Москва","Московская область"]
   }
   </script>
 </head>
 <body>
-  <header class="site-header" id="top">
+  <header class="site-header">
     <a class="brand" href="#top" aria-label="Корпорация РС — наверх">
-      <span class="brand-mark">РС</span>
-      <span class="brand-name">КОРПОРАЦИЯ <b>РС</b></span>
+      <span class="brand-symbol">РС</span>
+      <span class="brand-word">КОРПОРАЦИЯ РС</span>
     </a>
-    <nav class="desktop-nav" aria-label="Основная навигация">
+    <nav class="nav" aria-label="Основная навигация">
       <a href="#project">Проект</a>
       <a href="#company">Компания</a>
       <a href="#process">Как строим</a>
       <a href="#contacts">Контакты</a>
     </nav>
     <a class="header-phone" href="tel:+79255007779">+7 925 500-77-79</a>
-    <button class="menu-button" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span></button>
+    <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span></button>
   </header>
 
   <div class="mobile-menu" aria-hidden="true">
-    <a href="#project">Проект</a>
-    <a href="#company">Компания</a>
-    <a href="#process">Как строим</a>
-    <a href="#contacts">Контакты</a>
-    <a class="mobile-phone" href="tel:+79255007779">+7 925 500-77-79</a>
+    <nav>
+      <a href="#project">Проект</a>
+      <a href="#company">Компания</a>
+      <a href="#process">Как строим</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <div class="mobile-menu-bottom">
+      <a href="tel:+79255007779">+7 925 500-77-79</a>
+      <a href="mailto:Info@corp-rs.ru">Info@corp-rs.ru</a>
+    </div>
   </div>
 
-  <main>
+  <main id="top">
     <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow">Москва · Московская область</div>
-        <h1>Строим дома,<br><em>в которых остаются</em></h1>
-        <p class="hero-lead">Проектирование и строительство частных домов для постоянной жизни. От идеи и расчёта — до готового дома.</p>
+      <picture class="hero-image">
+        <source media="(max-width: 700px)" srcset="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-mobile.webp" />
+        <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.webp" alt="Архитектурная визуализация проекта Простор RS 8×8" fetchpriority="high" />
+      </picture>
+      <div class="hero-shade"></div>
+      <div class="hero-content wrap">
+        <div class="hero-kicker">Москва и Московская область · с 2009 года</div>
+        <h1>Строительство домов<br>для постоянной жизни</h1>
+        <p>Проектируем и строим частные дома. Понятная архитектура, прозрачная логика работы и проверяемая компания.</p>
         <div class="hero-actions">
-          <a class="btn btn-dark" href="#project">Смотреть проект</a>
-          <a class="text-link" href="tel:+79255007779">Обсудить строительство <span>↗</span></a>
-        </div>
-        <div class="hero-proof" aria-label="Ключевые факты">
-          <div><strong>2009</strong><span>год основания</span></div>
-          <div><strong>22876</strong><span>ID на Строим.дом.рф</span></div>
+          <a class="button button-light" href="#project">Смотреть проект</a>
+          <a class="button button-ghost" href="#contacts">Обсудить строительство</a>
         </div>
       </div>
-      <figure class="hero-media">
-        <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.webp" alt="Архитектурная визуализация проекта Простор RS 8×8" fetchpriority="high" />
-        <figcaption><span>01</span> Проект «Простор RS 8×8»</figcaption>
-      </figure>
-      <div class="hero-rail">КОРПОРАЦИЯ РС · СТРОИТЕЛЬСТВО ЧАСТНЫХ ДОМОВ</div>
+      <div class="hero-meta wrap">
+        <span>Проект на экране — «Простор RS 8×8»</span>
+        <a href="https://строим.дом.рф/contractor/22876" target="_blank" rel="noopener">Строим.дом.рф · ID 22876 ↗</a>
+      </div>
+    </section>
+
+    <section class="intro section">
+      <div class="wrap intro-grid">
+        <div class="label">Корпорация РС</div>
+        <div>
+          <p class="intro-lead">Дом должен быть удобным до того, как станет красивым.</p>
+          <p class="intro-copy">Поэтому мы начинаем с сценария жизни семьи, участка и понятной планировки — а уже потом выбираем архитектурные решения и комплектацию.</p>
+        </div>
+      </div>
     </section>
 
     <section class="project section" id="project">
-      <div class="section-head project-head">
-        <div>
-          <span class="section-index">01 / Проект</span>
-          <h2><span>Простор</span><br>RS 8×8</h2>
-        </div>
-        <p>Компактный двухэтажный дом для семьи: четыре спальни, просторная кухня-гостиная, санузел и бойлерная — без лишних метров и сложной архитектуры.</p>
-      </div>
-
-      <div class="project-stats">
-        <div><strong>≈90</strong><span>м² площадь</span></div>
-        <div><strong>8×8</strong><span>м габариты</span></div>
-        <div><strong>2</strong><span>этажа</span></div>
-        <div><strong>4</strong><span>спальни</span></div>
-      </div>
-
-      <div class="gallery-grid" data-gallery>
-        <button class="gallery-item gallery-a" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front.webp" aria-label="Открыть передний фасад">
-          <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front.webp" alt="Визуализация переднего фасада проекта Простор" loading="lazy" />
-          <span>Передний фасад</span>
-        </button>
-        <button class="gallery-item gallery-b" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-mobile.webp" aria-label="Открыть вертикальный ракурс">
-          <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-mobile.webp" alt="Вертикальная визуализация проекта Простор" loading="lazy" />
-          <span>Главный вход</span>
-        </button>
-        <button class="gallery-item gallery-c" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.webp" aria-label="Открыть ракурс слева">
-          <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.webp" alt="Визуализация проекта Простор с левого угла" loading="lazy" />
-          <span>Ракурс 3/4</span>
-        </button>
-        <button class="gallery-item gallery-d" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-detail.png" aria-label="Открыть деталь фасада">
-          <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-detail.png" alt="Архитектурная деталь проекта Простор" loading="lazy" />
-          <span>Деталь фасада</span>
-        </button>
-        <button class="gallery-item gallery-e" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-rear.png" aria-label="Открыть задний фасад">
-          <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-rear.png" alt="Визуализация заднего фасада проекта Простор" loading="lazy" />
-          <span>Задний фасад</span>
-        </button>
-      </div>
-      <p class="visual-note">Изображения — архитектурные визуализации проекта, не фотографии построенного объекта.</p>
-
-      <div class="plan-copy">
-        <span class="section-index">Планировочная логика</span>
-        <div class="plan-grid">
-          <div class="plan-number">2 + 2</div>
-          <div class="plan-text">
-            <h3>Спальни на двух этажах</h3>
-            <p>Две спальни расположены на первом этаже и ещё две — на втором. Такое решение даёт семье гибкость: кабинет, гостевая, спальня родителей или детская без перестройки дома.</p>
+      <div class="wrap project-layout">
+        <aside class="project-copy">
+          <span class="label">Проект 01</span>
+          <h2>Простор<br><span>RS 8×8</span></h2>
+          <p>Компактный двухэтажный дом для семьи с четырьмя спальнями, кухней-гостиной, санузлом и бойлерной.</p>
+          <div class="project-stats">
+            <div><strong>≈90</strong><span>м²</span></div>
+            <div><strong>8×8</strong><span>габариты</span></div>
+            <div><strong>2</strong><span>этажа</span></div>
+            <div><strong>4</strong><span>спальни</span></div>
           </div>
+          <a class="project-call" href="tel:+79255007779">Получить расчёт проекта ↗</a>
+        </aside>
+
+        <div class="project-media" data-gallery>
+          <button class="media media-main" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front.webp" type="button">
+            <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front.webp" alt="Передний фасад проекта Простор" loading="lazy" />
+            <span>Передний фасад</span>
+          </button>
+          <div class="media-pair">
+            <button class="media media-vertical" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-mobile.webp" type="button">
+              <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-mobile.webp" alt="Входная группа проекта Простор" loading="lazy" />
+              <span>Входная группа</span>
+            </button>
+            <button class="media" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.webp" type="button">
+              <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.webp" alt="Проект Простор с другого ракурса" loading="lazy" />
+              <span>Ракурс 3/4</span>
+            </button>
+          </div>
+          <button class="media media-wide" data-full="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-rear.png" type="button">
+            <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-rear.png" alt="Задний фасад проекта Простор" loading="lazy" />
+            <span>Задний фасад</span>
+          </button>
+          <p class="visual-note">Изображения — архитектурные визуализации проекта, не фотографии построенного объекта.</p>
         </div>
       </div>
     </section>
 
     <section class="company section dark" id="company">
-      <div class="section-head company-head">
-        <span class="section-index light">02 / Компания</span>
-        <h2>Не обещания.<br><em>Проверяемые факты.</em></h2>
-      </div>
-      <div class="company-layout">
-        <div class="company-story">
-          <p class="company-intro">«Корпорация РС» — строительная компания, зарегистрированная в 2009 году. Основное направление деятельности — строительство жилых и нежилых зданий.</p>
-          <p>Компания работает в Москве и Московской области, развивает направление индивидуального жилищного строительства и представлена в официальном сервисе Строим.дом.рф.</p>
+      <div class="wrap">
+        <div class="company-top">
+          <span class="label label-light">Компания</span>
+          <h2>Проверяемая история,<br>а не маркетинговая легенда.</h2>
         </div>
-        <div class="fact-stack">
-          <a class="fact-row" href="https://строим.дом.рф/contractor/22876" target="_blank" rel="noopener">
-            <span>Строим.дом.рф</span><strong>ID 22876</strong><i>↗</i>
-          </a>
-          <div class="fact-row"><span>Регистрация компании</span><strong>17.03.2009</strong><i>—</i></div>
-          <div class="fact-row"><span>Выручка за 2025 год</span><strong>348,2 млн ₽</strong><i>—</i></div>
-          <div class="fact-row"><span>Основной ОКВЭД</span><strong>41.20</strong><i>—</i></div>
+        <div class="company-grid">
+          <div class="company-copy">
+            <p class="company-lead">ООО «Корпорация РС» зарегистрировано 17 марта 2009 года. Основное направление деятельности — строительство жилых и нежилых зданий.</p>
+            <p>Компания работает в Москве и Московской области и представлена в официальном сервисе Строим.дом.рф.</p>
+          </div>
+          <div class="company-numbers">
+            <div><strong>2009</strong><span>год регистрации</span></div>
+            <div><strong>22876</strong><span>ID на Строим.дом.рф</span></div>
+            <div><strong>348,2</strong><span>млн ₽ выручка за 2025 год</span></div>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="process section" id="process">
-      <div class="section-head process-head">
-        <span class="section-index">03 / Процесс</span>
-        <h2>От разговора<br>до готового дома</h2>
-        <p>Один понятный маршрут без визуального шума и красивых обещаний, которые невозможно проверить.</p>
-      </div>
-      <ol class="steps">
-        <li><span>01</span><div><h3>Обсуждаем задачу</h3><p>Состав семьи, участок, сценарий жизни, бюджет и требования к дому.</p></div></li>
-        <li><span>02</span><div><h3>Подбираем проект</h3><p>Берём готовое решение или адаптируем планировку под конкретный участок.</p></div></li>
-        <li><span>03</span><div><h3>Формируем расчёт</h3><p>Согласовываем состав работ, комплектацию и условия договора.</p></div></li>
-        <li><span>04</span><div><h3>Готовим строительство</h3><p>Организуем подготовительные работы и последовательность этапов.</p></div></li>
-        <li><span>05</span><div><h3>Строим</h3><p>Ведём работы по согласованным этапам и фиксируем фактическое выполнение.</p></div></li>
-        <li><span>06</span><div><h3>Передаём дом</h3><p>Финальная проверка, приёмка и передача результата заказчику.</p></div></li>
-      </ol>
-    </section>
-
-    <section class="escrow-band">
-      <div class="escrow-copy">
-        <span class="section-index light">04 / Расчёты</span>
-        <h2>Эскроу — когда он предусмотрен договором</h2>
-        <p>Средства заказчика размещаются на специальном счёте в банке и перечисляются подрядчику после выполнения предусмотренных условий. Наличие карточки компании на Строим.дом.рф не означает, что каждый договор заключается через эскроу.</p>
-      </div>
-      <div class="escrow-flow" aria-label="Схема эскроу">
-        <div><span>01</span><strong>Заказчик</strong><small>размещает средства</small></div>
-        <b>→</b>
-        <div><span>02</span><strong>Банк</strong><small>хранит средства</small></div>
-        <b>→</b>
-        <div><span>03</span><strong>Подрядчик</strong><small>получает после условий</small></div>
+      <div class="wrap">
+        <div class="section-title">
+          <span class="label">Как строим</span>
+          <h2>Один маршрут.<br>Понятные этапы.</h2>
+        </div>
+        <div class="process-list">
+          <article><span>01</span><h3>Задача</h3><p>Обсуждаем участок, состав семьи, сценарий жизни и требования к дому.</p></article>
+          <article><span>02</span><h3>Проект</h3><p>Подбираем готовое решение или адаптируем планировку под участок.</p></article>
+          <article><span>03</span><h3>Расчёт и договор</h3><p>Фиксируем состав работ, комплектацию, стоимость и условия.</p></article>
+          <article><span>04</span><h3>Строительство</h3><p>Ведём работы по согласованным этапам и фиксируем их выполнение.</p></article>
+          <article><span>05</span><h3>Приёмка</h3><p>Проверяем результат вместе с заказчиком и передаём готовый дом.</p></article>
+        </div>
       </div>
     </section>
 
     <section class="proof section">
-      <div class="section-head proof-head">
-        <span class="section-index">05 / Документы и опыт</span>
-        <h2>Можно проверить<br>самостоятельно</h2>
+      <div class="wrap proof-grid">
+        <div class="section-title proof-title">
+          <span class="label">Документы и опыт</span>
+          <h2>То, что можно<br>проверить самому.</h2>
+        </div>
+        <div class="proof-list">
+          <a href="https://строим.дом.рф/contractor/22876" target="_blank" rel="noopener"><span>Строим.дом.рф</span><strong>ООО «КОРПОРАЦИЯ РС» · ID 22876</strong><i>↗</i></a>
+          <div><span>Юридические данные</span><strong>ИНН 2320172490 · ОГРН 1092366001683</strong><i>Москва</i></div>
+          <div><span>Лицензия МЧС</span><strong>№ Л014-00101-77/04986869</strong><i>14.05.2026</i></div>
+          <div><span>Опыт контрактов</span><strong>Работа по 44-ФЗ</strong><i>публичные данные</i></div>
+        </div>
       </div>
-      <div class="proof-list">
-        <a href="https://строим.дом.рф/contractor/22876" target="_blank" rel="noopener"><span>Строим.дом.рф</span><strong>ООО «КОРПОРАЦИЯ РС» · ID 22876</strong><i>Открыть ↗</i></a>
-        <div><span>Лицензия МЧС</span><strong>№ Л014-00101-77/04986869</strong><i>от 14.05.2026</i></div>
-        <div><span>Юридические данные</span><strong>ИНН 2320172490 · ОГРН 1092366001683</strong><i>Москва</i></div>
-        <div><span>Опыт контрактов</span><strong>Работа по 44-ФЗ</strong><i>публичные данные</i></div>
-      </div>
-      <p class="proof-note">Лицензия МЧС относится к монтажу, обслуживанию и ремонту средств обеспечения пожарной безопасности и не является лицензией на строительство домов.</p>
     </section>
 
     <section class="faq section">
-      <div class="section-head faq-head">
-        <span class="section-index">06 / Вопросы</span>
-        <h2>Коротко о главном</h2>
-      </div>
-      <div class="faq-list">
-        <details><summary>Можно изменить проект «Простор»?<span>+</span></summary><p>Проект можно обсуждать и адаптировать под участок и задачи семьи. Конкретный объём изменений определяется после консультации.</p></details>
-        <details><summary>Что входит в стоимость строительства?<span>+</span></summary><p>Состав работ зависит от согласованной комплектации. Стоимость и перечень этапов фиксируются в расчёте и договоре.</p></details>
-        <details><summary>Можно строить на участке заказчика?<span>+</span></summary><p>Да, строительство частного дома предполагает работу на участке заказчика после проверки исходных данных и условий участка.</p></details>
-        <details><summary>Можно использовать эскроу?<span>+</span></summary><p>Такой формат возможен, если он предусмотрен конкретной схемой финансирования и договором. Условия уточняются до подписания договора.</p></details>
+      <div class="wrap faq-grid">
+        <div class="section-title">
+          <span class="label">Вопросы</span>
+          <h2>Коротко<br>о главном.</h2>
+        </div>
+        <div class="faq-list">
+          <details><summary>Можно изменить проект «Простор»?<span>+</span></summary><p>Да. Объём изменений обсуждается после анализа участка и задач семьи.</p></details>
+          <details><summary>Что входит в стоимость?<span>+</span></summary><p>Стоимость зависит от комплектации и состава работ. Финальный перечень фиксируется в расчёте и договоре.</p></details>
+          <details><summary>Можно использовать эскроу?<span>+</span></summary><p>Схема возможна, если она предусмотрена конкретным договором и способом финансирования.</p></details>
+          <details><summary>Где вы строите?<span>+</span></summary><p>Основной регион работы — Москва и Московская область.</p></details>
+        </div>
       </div>
     </section>
 
-    <section class="contacts" id="contacts">
-      <div class="contact-main">
-        <span class="section-index light">07 / Контакты</span>
-        <h2>Обсудим<br><em>ваш будущий дом</em></h2>
-        <a class="big-phone" href="tel:+79255007779">+7 925 500-77-79</a>
-        <a class="big-mail" href="mailto:Info@corp-rs.ru">Info@corp-rs.ru</a>
-        <div class="contact-actions">
-          <a class="btn btn-light" href="tel:+79255007779">Позвонить</a>
-          <a class="text-link light-link" href="mailto:Info@corp-rs.ru">Написать на email <span>↗</span></a>
-        </div>
-      </div>
-      <div class="office-card">
+    <section class="contact" id="contacts">
+      <div class="wrap contact-grid">
         <div>
-          <span>Офис в Москве</span>
-          <strong>Воронцовский переулок, 5/7</strong>
-          <p>109044, Москва<br>помещ. 1/П</p>
+          <span class="label label-light">Контакты</span>
+          <h2>Обсудим<br>ваш будущий дом.</h2>
         </div>
-        <a href="https://yandex.ru/maps/?text=109044%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D0%92%D0%BE%D1%80%D0%BE%D0%BD%D1%86%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D0%B5%D1%80%D0%B5%D1%83%D0%BB%D0%BE%D0%BA%2C%205%2F7" target="_blank" rel="noopener">Открыть в Яндекс Картах ↗</a>
+        <div class="contact-details">
+          <a class="phone-large" href="tel:+79255007779">+7 925 500-77-79</a>
+          <a href="mailto:Info@corp-rs.ru">Info@corp-rs.ru</a>
+          <p>109044, Москва<br>Воронцовский переулок, д. 5/7, помещ. 1/П</p>
+          <a class="map-link" href="https://yandex.ru/maps/?text=109044%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D0%92%D0%BE%D1%80%D0%BE%D0%BD%D1%86%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D0%B5%D1%80%D0%B5%D1%83%D0%BB%D0%BE%D0%BA%2C%205%2F7" target="_blank" rel="noopener">Открыть адрес на карте ↗</a>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="footer-brand">КОРПОРАЦИЯ РС</div>
-    <div class="footer-links">
-      <a href="privacy.html">Политика обработки данных</a>
-      <a href="consent.html">Согласие на обработку ПД</a>
-      <a href="https://строим.дом.рф/contractor/22876" target="_blank" rel="noopener">Строим.дом.рф ↗</a>
+    <div class="wrap footer-grid">
+      <div class="footer-brand">КОРПОРАЦИЯ РС</div>
+      <div class="footer-links"><a href="privacy.html">Политика обработки данных</a><a href="consent.html">Согласие на обработку ПД</a></div>
+      <div class="footer-legal">ООО «КОРПОРАЦИЯ РЕСУРС СТРОЙ» · ИНН 2320172490 · КПП 770501001 · ОГРН 1092366001683 · © 2026</div>
     </div>
-    <div class="footer-legal">ООО «КОРПОРАЦИЯ РЕСУРС СТРОЙ» · ИНН 2320172490 · КПП 770501001 · ОГРН 1092366001683 · © 2026</div>
   </footer>
 
-  <div class="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Просмотр изображения">
-    <button class="lightbox-close" aria-label="Закрыть">×</button>
-    <img src="" alt="" />
-    <div class="lightbox-caption"></div>
+  <div class="lightbox" aria-hidden="true">
+    <button class="lightbox-close" type="button" aria-label="Закрыть">×</button>
+    <img alt="" />
   </div>
 
   <script src="script.js"></script>
