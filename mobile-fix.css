@@ -1,0 +1,71 @@
+/* Mobile layout corrections loaded after the main stylesheet. */
+@media (max-width:700px){
+  .project-showcase,
+  .project-showcase.reverse{
+    display:flex !important;
+    flex-direction:column !important;
+    gap:0 !important;
+    align-items:stretch !important;
+  }
+
+  .project-showcase:not(.reverse) .project-collage,
+  .project-showcase.reverse .project-collage{
+    order:1 !important;
+  }
+
+  .project-showcase:not(.reverse) .showcase-copy,
+  .project-showcase.reverse .showcase-copy{
+    order:2 !important;
+  }
+
+  .project-collage,
+  .project-collage-light{
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    grid-template-rows:auto auto !important;
+    grid-auto-rows:auto !important;
+    gap:6px !important;
+    align-items:start !important;
+    overflow:visible !important;
+  }
+
+  .project-collage img,
+  .project-collage-light img{
+    position:static !important;
+    display:block !important;
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    object-fit:cover !important;
+  }
+
+  .project-collage .collage-main,
+  .project-collage-light .collage-main{
+    grid-column:1 / -1 !important;
+    grid-row:1 !important;
+    aspect-ratio:4 / 3 !important;
+  }
+
+  .project-collage img:not(.collage-main),
+  .project-collage-light img:not(.collage-main){
+    grid-row:2 !important;
+    aspect-ratio:1.15 / 1 !important;
+  }
+
+  .showcase-copy{
+    position:relative !important;
+    z-index:2 !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:22px 0 0 !important;
+    background:var(--paper) !important;
+  }
+
+  .showcase-top{
+    margin-top:0 !important;
+  }
+}
