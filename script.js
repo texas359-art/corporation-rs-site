@@ -1,3 +1,8 @@
+const mobileFix=document.createElement('link');
+mobileFix.rel='stylesheet';
+mobileFix.href=document.body.classList.contains('project-page')?'../mobile-fix.css':'mobile-fix.css';
+document.head.appendChild(mobileFix);
+
 const menuBtn=document.querySelector('.menu-btn');
 const mobileNav=document.querySelector('.mobile-nav');
 if(menuBtn&&mobileNav){
