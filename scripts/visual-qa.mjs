@@ -8,6 +8,7 @@ const outputDir = path.resolve('visual-qa-output');
 const targets = [
   { name: 'home', path: '/' },
   { name: 'rs-8x8', path: '/projects/rs-8x8.html' },
+  { name: 'rs-8x8-3d', path: '/projects/rs-8x8-3d.html', requires3d: true },
 ];
 
 const viewports = [
@@ -44,7 +45,19 @@ for (const target of targets) {
 
     const url = new URL(target.path, baseURL).href;
     const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-    await page.waitForTimeout(350);
+
+    let threeDReady = null;
+    if (target.requires3d) {
+      try {
+        await page.waitForFunction(() => window.__RS3D_READY__ === true, null, { timeout: 15000 });
+        threeDReady = true;
+      } catch (error) {
+        threeDReady = false;
+        pageErrors.push(`3D viewer did not become ready: ${String(error)}`);
+      }
+    }
+
+    await page.waitForTimeout(target.requires3d ? 800 : 350);
 
     const status = response?.status() ?? 0;
     const metrics = await page.evaluate((expectedDpr) => {
@@ -96,6 +109,10 @@ for (const target of targets) {
         }
       });
 
+      const canvas = document.querySelector('canvas');
+      const canvasRect = canvas?.getBoundingClientRect();
+      const canvasVisible = !!canvasRect && canvasRect.width > 100 && canvasRect.height > 100;
+
       return {
         title: document.title,
         viewportWidth,
@@ -103,23 +120,18 @@ for (const target of targets) {
         horizontalOverflow,
         images,
         layoutOverlaps,
+        canvasVisible,
       };
     }, viewport.expectedDpr);
 
     const baseName = `${target.name}__${viewport.name}`;
-    await page.screenshot({
-      path: path.join(outputDir, `${baseName}__viewport.png`),
-      fullPage: false,
-      animations: 'disabled',
-    });
-    await page.screenshot({
-      path: path.join(outputDir, `${baseName}__full.png`),
-      fullPage: true,
-      animations: 'disabled',
-    });
+    await page.screenshot({ path: path.join(outputDir, `${baseName}__viewport.png`), fullPage: false, animations: 'disabled' });
+    await page.screenshot({ path: path.join(outputDir, `${baseName}__full.png`), fullPage: true, animations: 'disabled' });
 
     const brokenImages = metrics.images.filter((img) => img.broken);
     const lowResolutionImages = metrics.images.filter((img) => img.lowResolution && !img.broken);
+
+    if (target.requires3d && !metrics.canvasVisible) pageErrors.push('3D canvas is not visibly rendered');
 
     results.push({
       target: target.name,
@@ -136,6 +148,8 @@ for (const target of targets) {
       lowResolutionImages,
       consoleErrors,
       pageErrors,
+      threeDReady,
+      canvasVisible: metrics.canvasVisible,
     });
 
     await context.close();
@@ -150,37 +164,28 @@ const fatal = results.filter((r) =>
   r.horizontalOverflow ||
   r.layoutOverlaps.length > 0 ||
   r.brokenImages.length > 0 ||
-  r.pageErrors.length > 0
+  r.pageErrors.length > 0 ||
+  r.threeDReady === false
 );
 const warnings = results.filter((r) => r.lowResolutionImages.length > 0 || r.consoleErrors.length > 0);
 
-await fs.writeFile(
-  path.join(outputDir, 'report.json'),
-  JSON.stringify({ generatedAt: new Date().toISOString(), baseURL, results }, null, 2),
-  'utf8',
-);
+await fs.writeFile(path.join(outputDir, 'report.json'), JSON.stringify({ generatedAt: new Date().toISOString(), baseURL, results }, null, 2), 'utf8');
 
 const lines = [
-  '# Visual QA report',
-  '',
-  `Base URL: ${baseURL}`,
-  `Checks: ${results.length}`,
-  `Fatal checks: ${fatal.length}`,
-  `Warning checks: ${warnings.length}`,
-  '',
-  '## Summary',
-  '',
-  '| Page | Viewport | HTTP | Overflow | Layout overlaps | Broken images | Low-res images | Console errors |',
-  '|---|---:|---:|---:|---:|---:|---:|---:|',
-  ...results.map((r) => `| ${r.target} | ${r.viewport} | ${r.status} | ${r.horizontalOverflow ? 'YES' : 'no'} | ${r.layoutOverlaps.length} | ${r.brokenImages.length} | ${r.lowResolutionImages.length} | ${r.consoleErrors.length} |`),
+  '# Visual QA report','',`Base URL: ${baseURL}`,`Checks: ${results.length}`,`Fatal checks: ${fatal.length}`,`Warning checks: ${warnings.length}`,'',
+  '## Summary','',
+  '| Page | Viewport | HTTP | Overflow | Layout overlaps | 3D ready | Broken images | Low-res images | Console errors |',
+  '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
+  ...results.map((r) => `| ${r.target} | ${r.viewport} | ${r.status} | ${r.horizontalOverflow ? 'YES' : 'no'} | ${r.layoutOverlaps.length} | ${r.threeDReady === null ? '—' : (r.threeDReady ? 'yes' : 'NO')} | ${r.brokenImages.length} | ${r.lowResolutionImages.length} | ${r.consoleErrors.length} |`),
   '',
 ];
 
 for (const r of results) {
-  if (!r.horizontalOverflow && !r.layoutOverlaps.length && !r.brokenImages.length && !r.lowResolutionImages.length && !r.consoleErrors.length && !r.pageErrors.length) continue;
+  if (!r.horizontalOverflow && !r.layoutOverlaps.length && !r.brokenImages.length && !r.lowResolutionImages.length && !r.consoleErrors.length && !r.pageErrors.length && r.threeDReady !== false) continue;
   lines.push(`## ${r.target} / ${r.viewport}`, '');
   if (r.horizontalOverflow) lines.push(`- Horizontal overflow: document ${r.documentWidth}px vs viewport ${r.width}px`);
   for (const overlap of r.layoutOverlaps) lines.push(`- LAYOUT OVERLAP: project block ${overlap.block}, ${overlap.overlapWidth}px × ${overlap.overlapHeight}px overlap between collage and copy`);
+  if (r.threeDReady === false) lines.push('- 3D VIEWER FAILED TO INITIALIZE');
   for (const img of r.brokenImages) lines.push(`- BROKEN IMAGE: ${img.src || '(empty src)'}`);
   for (const img of r.lowResolutionImages) lines.push(`- LOW-RES IMAGE: ${img.src} — source ${img.naturalWidth}×${img.naturalHeight}, rendered ${img.renderedWidth}×${img.renderedHeight}, target DPR ${r.expectedDpr}`);
   for (const error of r.consoleErrors) lines.push(`- Console error: ${error}`);
@@ -190,8 +195,4 @@ for (const r of results) {
 
 await fs.writeFile(path.join(outputDir, 'report.md'), lines.join('\n'), 'utf8');
 console.log(lines.join('\n'));
-
-if (fatal.length) {
-  console.error(`Visual QA found ${fatal.length} fatal check(s). Screenshots and report were still generated.`);
-  process.exitCode = 1;
-}
+if (fatal.length) { console.error(`Visual QA found ${fatal.length} fatal check(s). Screenshots and report were still generated.`); process.exitCode = 1; }
