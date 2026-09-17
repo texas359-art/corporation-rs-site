@@ -1,1 +1,7 @@
-const header=document.querySelector('[data-header]');const menu=document.querySelector('.menu');const mobile=document.querySelector('[data-mobile-nav]');function syncHeader(){if(!header)return;header.classList.toggle('scrolled',window.scrollY>40||document.body.classList.contains('project-page'))}syncHeader();addEventListener('scroll',syncHeader,{passive:true});if(menu&&mobile){menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')==='true';menu.setAttribute('aria-expanded',String(!open));mobile.classList.toggle('open',!open);document.body.style.overflow=open?'':'hidden'});mobile.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{menu.setAttribute('aria-expanded','false');mobile.classList.remove('open');document.body.style.overflow=''}))}
+const menuBtn=document.querySelector('.menu-btn');
+const mobileNav=document.querySelector('.mobile-nav');
+if(menuBtn&&mobileNav){
+  const close=()=>{menuBtn.setAttribute('aria-expanded','false');mobileNav.classList.remove('open');mobileNav.setAttribute('aria-hidden','true');document.body.style.overflow=''};
+  menuBtn.addEventListener('click',()=>{const open=menuBtn.getAttribute('aria-expanded')==='true';menuBtn.setAttribute('aria-expanded',String(!open));mobileNav.classList.toggle('open',!open);mobileNav.setAttribute('aria-hidden',String(open));document.body.style.overflow=open?'':'hidden'});
+  mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
+}
