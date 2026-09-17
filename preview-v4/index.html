@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Простор — визуальный прототип</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root{--ink:#111;--paper:#f4f2ed;--line:rgba(17,17,17,.16);--muted:#6d6d68}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}img{display:block;width:100%;height:100%;object-fit:cover}
+    .hero{position:relative;min-height:100svh;color:#fff;background:#191919;overflow:hidden}.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.42) 0%,rgba(0,0,0,.08) 38%,rgba(0,0,0,.12) 58%,rgba(0,0,0,.62) 100%);z-index:1}.hero img{position:absolute;inset:0;filter:saturate(.88) contrast(1.03);transform:scale(1.01)}
+    .header{position:absolute;z-index:3;top:0;left:0;right:0;height:84px;padding:0 42px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:1px solid rgba(255,255,255,.25)}.brand{font-size:19px;font-weight:700;letter-spacing:.18em}.nav{display:flex;gap:28px;font-size:12px;letter-spacing:.03em}.header-right{justify-self:end;display:flex;align-items:center;gap:20px;font-size:12px}.header-cta{border-bottom:1px solid rgba(255,255,255,.8);padding-bottom:4px}
+    .hero-content{position:relative;z-index:2;min-height:100svh;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.6fr);align-items:end;gap:40px;padding:150px 42px 44px}.hero-kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:20px;opacity:.78}.hero h1{font-size:clamp(58px,8vw,128px);line-height:.88;letter-spacing:-.065em;font-weight:500;margin:0;max-width:980px}.hero-side{justify-self:end;max-width:350px;width:100%;padding-bottom:7px}.project-label{font-size:11px;text-transform:uppercase;letter-spacing:.14em;opacity:.7;margin-bottom:12px}.hero-side h2{font-size:28px;line-height:1;margin:0 0 18px;font-weight:500}.spec-row{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;opacity:.88;border-top:1px solid rgba(255,255,255,.3);padding-top:14px}.view-link{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.3);margin-top:22px;padding-top:16px;font-size:13px}.view-link b{font-size:20px;font-weight:400}
+    .statement{padding:120px 42px 130px;display:grid;grid-template-columns:180px minmax(0,1fr);gap:50px;border-bottom:1px solid var(--line)}.statement .index{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:12px}.statement p{font-size:clamp(36px,5.4vw,82px);line-height:1.02;letter-spacing:-.055em;margin:0;max-width:1200px}.statement p span{color:#9a9992}
+    .projects{padding:0 42px 130px}.projects-head{display:flex;justify-content:space-between;align-items:flex-end;padding:26px 0 52px}.projects-head h2{margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase}.projects-head p{margin:0;font-size:12px;color:var(--muted)}
+    .project{border-top:1px solid var(--line);padding:22px 0 80px}.project-top{display:grid;grid-template-columns:100px 1fr auto;align-items:end;gap:24px;margin-bottom:18px}.project-num{font-size:11px;color:var(--muted)}.project-title h3{margin:0;font-size:clamp(34px,5vw,72px);line-height:.95;letter-spacing:-.05em;font-weight:500}.project-title p{margin:10px 0 0;color:var(--muted);font-size:13px}.project-meta{text-align:right;font-size:12px;line-height:1.7;color:#454541}.project-image{position:relative;height:min(72vw,820px);max-height:76vh;background:#d7d5cf;overflow:hidden}.project-image img{transition:transform 1s cubic-bezier(.2,.6,.2,1),filter .5s;filter:saturate(.9)}.project:hover .project-image img{transform:scale(1.018);filter:saturate(1)}.project-overlay{position:absolute;left:0;right:0;bottom:0;padding:26px;color:#fff;display:flex;justify-content:space-between;align-items:end;background:linear-gradient(180deg,transparent,rgba(0,0,0,.48))}.project-overlay span{font-size:12px}.project-overlay b{font-size:28px;font-weight:400}
+    .project.alt{display:grid;grid-template-columns:minmax(250px,.55fr) minmax(0,1.45fr);gap:28px;align-items:start}.project.alt .project-info{padding-top:10px}.project.alt .project-num{display:block;margin-bottom:50px}.project.alt h3{font-size:clamp(38px,5.6vw,80px);letter-spacing:-.055em;line-height:.95;margin:0 0 22px;font-weight:500}.project.alt .lead{font-size:17px;line-height:1.55;max-width:470px;color:#494944}.project.alt .tiny{margin-top:42px;font-size:12px;line-height:1.7;color:var(--muted)}.project.alt .project-image{height:76vh;min-height:560px}
+    .note{padding:80px 42px 100px;background:#111;color:#fff;display:grid;grid-template-columns:1fr 1fr;gap:80px}.note h2{font-size:clamp(40px,5vw,72px);line-height:.98;letter-spacing:-.05em;font-weight:500;margin:0}.note p{align-self:end;max-width:540px;color:#b7b7b1;line-height:1.65;margin:0;font-size:15px}
+    @media(max-width:900px){.header{padding:0 20px;grid-template-columns:1fr auto;height:70px}.nav{display:none}.header-right{gap:0}.header-right span{display:none}.hero-content{grid-template-columns:1fr;padding:130px 20px 28px}.hero h1{font-size:clamp(52px,16vw,86px)}.hero-side{justify-self:start;max-width:none}.statement{padding:80px 20px 90px;grid-template-columns:1fr;gap:28px}.statement p{font-size:clamp(38px,10vw,64px)}.projects{padding:0 20px 90px}.project-top{grid-template-columns:54px 1fr}.project-meta{grid-column:2;text-align:left;margin-top:4px}.project-image{height:68vh;min-height:460px}.project.alt{grid-template-columns:1fr}.project.alt .project-num{margin-bottom:28px}.project.alt .project-image{height:64vh;min-height:440px}.note{padding:70px 20px;grid-template-columns:1fr;gap:36px}}
+  </style>
+</head>
+<body>
+  <section class="hero" id="top">
+    <img src="../assets/rs8-front.webp" alt="Простор RS 8×8" />
+    <header class="header">
+      <a class="brand" href="#top">ПРОСТОР</a>
+      <nav class="nav">
+        <a href="#projects">Проекты</a><a href="#about">О подходе</a><a href="#contact">Контакты</a>
+      </nav>
+      <div class="header-right"><span>Москва и Московская область</span><a class="header-cta" href="#contact">Обсудить проект</a></div>
+    </header>
+    <div class="hero-content">
+      <div>
+        <div class="hero-kicker">Частные дома для постоянной жизни</div>
+        <h1>Дома, в которых хочется жить.</h1>
+      </div>
+      <div class="hero-side">
+        <div class="project-label">Проект 01</div>
+        <h2>Простор RS 8×8</h2>
+        <div class="spec-row"><span>90 м²</span><span>4 спальни</span><span>2 этажа</span></div>
+        <a class="view-link" href="../projects/rs-8x8.html"><span>Смотреть дом</span><b>↗</b></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="statement" id="about">
+    <div class="index">01 / Подход</div>
+    <p>Не каталог типовых коробок. <span>Каждый дом — понятный сценарий жизни для конкретной семьи.</span></p>
+  </section>
+
+  <main class="projects" id="projects">
+    <div class="projects-head"><h2>Проекты домов</h2><p>Выберите дом и откройте фасады, планировки и интерьерные решения</p></div>
+
+    <article class="project">
+      <div class="project-top">
+        <div class="project-num">01</div>
+        <div class="project-title"><h3>Простор RS 8×8</h3><p>Компактный двухэтажный дом для семьи с детьми</p></div>
+        <div class="project-meta">90 м²<br>4 спальни<br>8×8 м</div>
+      </div>
+      <a class="project-image" href="../projects/rs-8x8.html">
+        <img src="../assets/rs8-rear.webp" alt="Простор RS 8×8 — внешний вид" />
+        <div class="project-overlay"><span>Открыть проект</span><b>↗</b></div>
+      </a>
+    </article>
+
+    <article class="project alt">
+      <div class="project-info">
+        <span class="project-num">02</span>
+        <h3>Простор RS 10×8</h3>
+        <p class="lead">Одноэтажный дом с крытой террасой. Спокойная архитектура, две спальни и большая кухня-гостиная без лишних проходных зон.</p>
+        <p class="tiny">≈ 68 м² · 2 спальни · 1 этаж · крытая терраса<br><br>Полная страница проекта будет собрана после утверждения визуальной системы.</p>
+      </div>
+      <div class="project-image">
+        <img src="../assets/rs10-front.webp" alt="Простор RS 10×8 — внешний вид" />
+        <div class="project-overlay"><span>Проект в разработке</span><b>02</b></div>
+      </div>
+    </article>
+  </main>
+
+  <section class="note" id="contact">
+    <h2>Архитектура должна продавать дом, а не интерфейс.</h2>
+    <p>Это специально короткий визуальный прототип: без карточек, декоративных подложек и лишних маркетинговых блоков. Если направление подходит, уже на этой системе собираем главную, каталог и отдельные страницы проектов.</p>
+  </section>
+</body>
+</html>
