@@ -3,174 +3,174 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="description" content="ООО «Корпорация Ресурс Строй» — частные дома для постоянной жизни в Москве и Московской области. Проекты «Простор», строительство и сопровождение.">
-  <meta name="theme-color" content="#f2f0ea">
-  <title>Простор — проекты частных домов | Корпорация РС</title>
+  <meta name="description" content="Простор — проекты частных домов от ООО «Корпорация Ресурс Строй». Москва и Московская область.">
+  <meta name="theme-color" content="#f4f1eb">
+  <title>Простор — частные дома для постоянной жизни</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="script.js"></script>
 </head>
 <body>
-  <a class="skip" href="#main">К содержанию</a>
-
-  <header class="site-header" id="top">
-    <div class="shell header-inner">
-      <a class="brand" href="#top" aria-label="Простор — на главную">ПРОСТОР</a>
-      <nav class="desktop-nav" aria-label="Основная навигация">
+  <header class="header" id="top">
+    <div class="wrap header__inner">
+      <a class="logo" href="#top">ПРОСТОР</a>
+      <nav class="nav" aria-label="Навигация">
         <a href="#projects">Проекты</a>
         <a href="#about">О компании</a>
         <a href="#escrow">Эскроу</a>
-        <a href="#process">Как строим</a>
+        <a href="#steps">Как работаем</a>
         <a href="#contacts">Контакты</a>
       </nav>
-      <div class="header-actions">
-        <a class="header-cta" href="#contacts">Обсудить проект</a>
-        <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Открыть меню"><span></span><span></span></button>
-      </div>
+      <a class="header__cta" href="#contacts">Обсудить дом</a>
+      <button class="menu" type="button" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span></button>
     </div>
-    <nav class="mobile-nav" id="mobile-menu" aria-label="Мобильная навигация" aria-hidden="true">
-      <a href="#projects">Проекты</a><a href="#about">О компании</a><a href="#escrow">Эскроу</a><a href="#process">Как строим</a><a href="#contacts">Контакты</a>
+    <nav class="mobile-nav" aria-hidden="true">
+      <a href="#projects">Проекты</a>
+      <a href="#about">О компании</a>
+      <a href="#escrow">Эскроу</a>
+      <a href="#steps">Как работаем</a>
+      <a href="#contacts">Контакты</a>
     </nav>
   </header>
 
-  <main id="main">
-    <section class="hero" aria-labelledby="hero-title">
-      <picture class="hero-picture">
-        <source media="(max-width:640px)" srcset="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-mobile.png">
-        <img class="hero-image" src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.png" alt="Проект частного дома «Простор»" fetchpriority="high">
-      </picture>
-      <div class="hero-shade"></div>
-      <div class="shell hero-inner">
-        <div class="hero-copy">
-          <p class="eyebrow light">Корпорация РС · Москва и Московская область</p>
-          <h1 id="hero-title">Дома для<br>постоянной жизни.</h1>
-          <p class="hero-lead">Проекты с понятной архитектурой, удобными планировками и сопровождением от выбора дома до завершения строительства.</p>
-          <div class="hero-actions">
-            <a class="button button-light" href="#projects">Смотреть проекты <span class="arrow-line" aria-hidden="true"></span></a>
-            <a class="hero-secondary" href="#about">О компании</a>
-          </div>
+  <main>
+    <section class="hero">
+      <img class="hero__image" src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.png" alt="Дом Простор RS 8×8" fetchpriority="high">
+      <div class="hero__overlay"></div>
+      <div class="wrap hero__content">
+        <div class="hero__text">
+          <p class="kicker light">Москва и Московская область</p>
+          <h1>Строим частные дома<br>для постоянной жизни</h1>
+          <p>Готовые архитектурные решения, понятные планировки и сопровождение от выбора проекта до передачи дома.</p>
+          <a class="btn btn--light" href="#projects">Посмотреть проекты</a>
         </div>
-        <a class="hero-project" href="projects/rs-8x8.html">
-          <span class="hero-project-kicker">Первый проект коллекции</span>
-          <strong>Простор RS 8×8</strong>
-          <span class="hero-specs">90 м² · 4 спальни · 2 этажа</span>
-          <span class="circle-arrow" aria-hidden="true"></span>
-        </a>
+        <div class="hero__facts" aria-label="Основные факты">
+          <div><strong>с 2009</strong><span>компания на рынке</span></div>
+          <div><strong>Москва + МО</strong><span>основной регион</span></div>
+          <div><strong>ИЖС</strong><span>дома для постоянной жизни</span></div>
+        </div>
       </div>
     </section>
 
-    <section class="benefits" aria-label="Основные принципы">
-      <div class="shell benefits-grid benefits-grid-3">
-        <div class="benefit"><span class="benefit-index">01</span><div><strong>Проект под жизнь</strong><span>Не наращиваем площадь ради цифры — планируем комнаты и связи между ними под реальный сценарий семьи.</span></div></div>
-        <div class="benefit"><span class="benefit-index">02</span><div><strong>Понятный объём работ</strong><span>До старта фиксируем состав работ, материалы, этапность и согласованные условия строительства.</span></div></div>
-        <div class="benefit"><span class="benefit-index">03</span><div><strong>Сопровождение</strong><span>Один проект проходит через выбор решения, адаптацию, строительство и передачу готового дома.</span></div></div>
-      </div>
-    </section>
-
-    <section class="projects section" id="projects">
-      <div class="shell">
-        <div class="section-heading projects-heading">
-          <div><p class="eyebrow">Проекты домов</p><h2>Не карточки каталога.<br>Каждый дом — отдельный проект.</h2></div>
-          <p class="section-intro">Внутри проекта показываем фасады с разных сторон, планировки, характеристики и варианты пространства. Начинаем с домов, которые уже строили.</p>
+    <section class="section" id="projects">
+      <div class="wrap">
+        <div class="section-head">
+          <div><p class="kicker">Проекты домов</p><h2>Два понятных формата<br>для старта</h2></div>
+          <p>На сайте показываем реальные типы домов, которые уже строили. Без перегруженного каталога: внешний вид, базовая планировка и ключевые характеристики — всё на одной странице.</p>
         </div>
 
-        <article class="project-showcase">
-          <a class="project-collage" href="projects/rs-8x8.html" aria-label="Открыть проект Простор RS 8×8">
-            <img class="collage-main" src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.png" alt="Простор RS 8×8 — фасад">
+        <article class="project">
+          <div class="project__gallery">
+            <img class="project__main" src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.png" alt="Простор RS 8×8 — главный фасад" loading="lazy">
             <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-rear.png" alt="Простор RS 8×8 — задний фасад" loading="lazy">
             <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-evening.png" alt="Простор RS 8×8 — вечерний вид" loading="lazy">
-          </a>
-          <div class="showcase-copy">
-            <div class="showcase-top"><span class="project-no">01</span><span class="project-type">Для постоянного проживания</span></div>
+          </div>
+          <div class="project__info">
+            <div class="project__top"><span>01</span><span>двухэтажный дом</span></div>
             <h3>Простор RS 8×8</h3>
-            <p>Компактный двухэтажный дом 8×8 м для семьи с детьми. Четыре спальни — две на первом этаже и две на втором, просторная кухня-гостиная, санузел и бойлерная.</p>
-            <div class="project-facts project-facts-table"><span><b>90 м²</b><small>площадь</small></span><span><b>4</b><small>спальни</small></span><span><b>2</b><small>этажа</small></span><span><b>8×8 м</b><small>габариты</small></span></div>
-            <a class="text-link" href="projects/rs-8x8.html">Открыть проект <span class="arrow-line" aria-hidden="true"></span></a>
+            <p>Компактный двухэтажный дом 8×8 м, 90 м² с удобной планировкой для семьи с детьми. Четыре спальни — две на первом этаже и две на втором, просторная кухня-гостиная, санузел и бойлерная.</p>
+            <div class="specs">
+              <div><b>90 м²</b><span>площадь</span></div>
+              <div><b>4</b><span>спальни</span></div>
+              <div><b>2</b><span>этажа</span></div>
+              <div><b>8×8 м</b><span>габариты</span></div>
+            </div>
+            <p class="project__note">Практичный вариант для комфортной семейной жизни без лишних площадей и сложных решений.</p>
           </div>
         </article>
 
-        <article class="project-showcase reverse">
-          <div class="showcase-copy">
-            <div class="showcase-top"><span class="project-no">02</span><span class="project-type">Одноэтажный дом</span></div>
-            <h3>Простор RS 10×8</h3>
-            <p>Спокойный одноэтажный дом с крытой террасой. Всё необходимое расположено на одном уровне: две спальни, общая кухня-гостиная, санузел и техническая зона.</p>
-            <div class="project-facts project-facts-table"><span><b>≈ 68 м²</b><small>площадь</small></span><span><b>2</b><small>спальни</small></span><span><b>1</b><small>этаж</small></span><span><b>терраса</b><small>крытая</small></span></div>
-            <span class="project-status">Полная страница проекта — следующий этап</span>
-          </div>
-          <div class="project-collage project-collage-light" aria-label="Фотографии проекта Простор RS 10×8">
-            <img class="collage-main" src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/projects/one-storey.png" alt="Простор RS 10×8 — главный фасад" loading="lazy">
+        <article class="project project--reverse">
+          <div class="project__gallery project__gallery--light">
+            <img class="project__main" src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/projects/one-storey.png" alt="Простор RS 10×8 — одноэтажный дом" loading="lazy">
             <img src="assets/rs10-front.webp" alt="Простор RS 10×8 — терраса" loading="lazy">
             <img src="assets/rs10-rear.webp" alt="Простор RS 10×8 — задний фасад" loading="lazy">
+          </div>
+          <div class="project__info">
+            <div class="project__top"><span>02</span><span>одноэтажный дом</span></div>
+            <h3>Простор RS 10×8</h3>
+            <p>Одноэтажный дом с крытой террасой для тех, кто хочет жить без лестниц. Две спальни, кухня-гостиная, санузел и техническая зона расположены на одном уровне.</p>
+            <div class="specs">
+              <div><b>≈ 68 м²</b><span>площадь</span></div>
+              <div><b>2</b><span>спальни</span></div>
+              <div><b>1</b><span>этаж</span></div>
+              <div><b>терраса</b><span>крытая</span></div>
+            </div>
+            <p class="project__note">Подходит для небольшой семьи, пары или загородного дома для постоянного проживания.</p>
           </div>
         </article>
       </div>
     </section>
 
     <section class="about section" id="about">
-      <div class="shell about-intro">
-        <div><p class="eyebrow light">О компании</p><h2>Корпорация РС.<br>Строим с 2009 года.</h2></div>
-        <div class="about-lead">
-          <p>ООО «Корпорация Ресурс Строй» проектирует и строит частные дома. Основной регион работы — Москва и Московская область.</p>
-          <p>«Простор» — наша линейка проектов домов для постоянной жизни. Мы собираем в ней решения, которые можно показать не одной красивой картинкой, а целиком: фасады, планировку, функциональные зоны и логику будущей жизни в доме.</p>
+      <div class="wrap about__grid">
+        <div>
+          <p class="kicker light">О компании</p>
+          <h2>Корпорация РС.<br>Строим с 2009 года.</h2>
+        </div>
+        <div class="about__text">
+          <p>ООО «Корпорация Ресурс Строй» занимается строительством жилых и нежилых зданий. Основной регион работы — Москва и Московская область.</p>
+          <p>В линейке «Простор» мы собрали проекты частных домов для постоянной жизни: без лишней площади, с понятной архитектурой и планировками, которые можно адаптировать под конкретную семью и участок.</p>
+          <p>На старте обсуждаем задачу, участок и состав семьи, после чего фиксируем проектную основу, объём работ, материалы, этапы и условия строительства.</p>
         </div>
       </div>
-      <div class="shell company-facts-grid">
+      <div class="wrap about__facts">
         <div><span>Компания зарегистрирована</span><strong>17 марта 2009</strong></div>
-        <div><span>Основной вид деятельности</span><strong>Строительство жилых и нежилых зданий</strong></div>
-        <div><span>Регион работы</span><strong>Москва и Московская область</strong></div>
+        <div><span>Основной регион</span><strong>Москва и Московская область</strong></div>
+        <div><span>Профиль</span><strong>Строительство жилых и нежилых зданий</strong></div>
         <div><span>ЕИСЖС / Строим.дом.рф</span><strong>карточка подрядчика ID 22876</strong></div>
-      </div>
-      <div class="shell about-detail-grid">
-        <article><span>01</span><h3>Проектирование</h3><p>Выбираем архитектурную основу, обсуждаем участок и адаптируем планировку под состав семьи и повседневные сценарии.</p></article>
-        <article><span>02</span><h3>Подготовка к строительству</h3><p>Согласовываем состав работ, материалы, технические решения и порядок взаимодействия до начала строительных работ.</p></article>
-        <article><span>03</span><h3>Строительство</h3><p>Ведём объект по этапам и сохраняем понятную последовательность работ — от основания до готового дома.</p></article>
-        <article><span>04</span><h3>Передача результата</h3><p>Финальный этап — проверка выполненных работ, документы и передача готового дома заказчику.</p></article>
       </div>
     </section>
 
     <section class="escrow section" id="escrow">
-      <div class="shell escrow-grid">
-        <div class="escrow-heading"><p class="eyebrow">Строительство с эскроу</p><h2>Деньги заказчика могут храниться в банке до готового дома.</h2></div>
-        <div class="escrow-copy">
-          <p class="escrow-lead">Федеральный закон №186-ФЗ предусматривает строительство индивидуального жилого дома по договору подряда с использованием счёта эскроу. Такая схема применяется, когда стороны выбирают соответствующий формат договора.</p>
-          <div class="escrow-steps">
-            <div><span>01</span><strong>Договор</strong><p>Заказчик и подрядчик заключают договор строительного подряда с использованием эскроу.</p></div>
-            <div><span>02</span><strong>Средства в банке</strong><p>Цена договора размещается на специальном счёте эскроу в уполномоченном банке и блокируется на период строительства.</p></div>
-            <div><span>03</span><strong>Раскрытие счёта</strong><p>Банк перечисляет средства подрядчику после получения сведений о государственной регистрации права собственности заказчика на построенный дом.</p></div>
+      <div class="wrap escrow__grid">
+        <div>
+          <p class="kicker">Строительство с эскроу</p>
+          <h2>Понятная схема расчётов через банк</h2>
+        </div>
+        <div>
+          <p class="escrow__lead">При подходящем формате договора строительство индивидуального жилого дома может проходить с использованием счёта эскроу: деньги заказчика хранятся в банке и перечисляются подрядчику после выполнения предусмотренных законом условий.</p>
+          <div class="escrow__steps">
+            <div><span>01</span><strong>Заключаем договор</strong><p>Фиксируем проект, объём работ, стоимость, сроки и формат расчётов.</p></div>
+            <div><span>02</span><strong>Средства размещаются в банке</strong><p>Деньги заказчика находятся на специальном счёте эскроу в рамках выбранной схемы.</p></div>
+            <div><span>03</span><strong>Раскрытие после выполнения условий</strong><p>Порядок перечисления средств определяется законом, банком и конкретным договором.</p></div>
           </div>
-          <p class="legal-note">Возможность и условия применения эскроу определяются для конкретного договора и банка. Мы не называем «Простор» партнёром или аккредитованным проектом ДОМ.РФ. <a href="https://publication.pravo.gov.ru/document/0001202407220001" target="_blank" rel="noopener">Федеральный закон №186-ФЗ ↗</a></p>
+          <p class="fineprint">Возможность применения эскроу и банковские условия определяются индивидуально для конкретного проекта и договора. Наличие информации на сайте не означает автоматическое банковское одобрение.</p>
         </div>
       </div>
     </section>
 
-    <section class="process section" id="process">
-      <div class="shell">
-        <div class="section-heading compact-heading"><div><p class="eyebrow">Как строим</p><h2>Путь от идеи<br>до готового дома</h2></div><p class="section-intro">Без лишней театральности: сначала задача и участок, затем проект и условия, после — строительство по согласованной последовательности.</p></div>
-        <div class="process-list">
-          <div class="process-item"><span>01</span><h3>Знакомимся с задачей</h3><p>Состав семьи, участок, желаемая площадь, количество комнат и важные бытовые привычки.</p></div>
-          <div class="process-item"><span>02</span><h3>Выбираем и адаптируем проект</h3><p>Уточняем планировку, посадку дома, фасадные решения и инженерные требования.</p></div>
-          <div class="process-item"><span>03</span><h3>Фиксируем условия</h3><p>Согласовываем объём работ, материалы, этапность, сроки и формат расчётов.</p></div>
-          <div class="process-item"><span>04</span><h3>Строим</h3><p>Организуем строительные работы по этапам и контролируем последовательность выполнения.</p></div>
-          <div class="process-item"><span>05</span><h3>Передаём дом</h3><p>Проверяем результат, закрываем строительный этап и передаём заказчику готовый дом и документы.</p></div>
+    <section class="section" id="steps">
+      <div class="wrap">
+        <div class="section-head section-head--compact">
+          <div><p class="kicker">Как работаем</p><h2>От идеи до готового дома</h2></div>
+        </div>
+        <div class="steps">
+          <div><span>01</span><h3>Обсуждаем задачу</h3><p>Участок, состав семьи, желаемая площадь и бюджет.</p></div>
+          <div><span>02</span><h3>Выбираем проект</h3><p>Берём готовую основу и уточняем планировку и внешний вид.</p></div>
+          <div><span>03</span><h3>Фиксируем условия</h3><p>Состав работ, материалы, сроки и порядок расчётов.</p></div>
+          <div><span>04</span><h3>Строим и передаём</h3><p>Ведём работы по этапам и передаём готовый результат.</p></div>
         </div>
       </div>
     </section>
 
     <section class="contact" id="contacts">
-      <div class="shell contact-grid">
-        <div><p class="eyebrow light">Связаться с нами</p><h2>Начнём с вашего участка<br>и будущего дома.</h2></div>
-        <div class="contact-info">
-          <a class="contact-email" href="mailto:Info@corp-rs.ru?subject=Проект%20дома%20Простор">Info@corp-rs.ru</a>
+      <div class="wrap contact__grid">
+        <div>
+          <p class="kicker light">Контакты</p>
+          <h2>Обсудим ваш будущий дом</h2>
+        </div>
+        <div class="contact__info">
+          <a class="contact__email" href="mailto:Info@corp-rs.ru?subject=Проект%20дома%20Простор">Info@corp-rs.ru</a>
           <p>109044, Москва, Воронцовский переулок, д. 5/7, помещ. 1/П</p>
-          <a class="button button-outline" href="mailto:Info@corp-rs.ru?subject=Хочу%20обсудить%20проект%20дома">Написать о проекте <span class="arrow-line" aria-hidden="true"></span></a>
+          <a class="btn btn--outline" href="mailto:Info@corp-rs.ru?subject=Хочу%20обсудить%20дом">Написать нам</a>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="shell footer-inner footer-rich">
-      <div><strong>ООО «КОРПОРАЦИЯ РЕСУРС СТРОЙ»</strong><span>ИНН 2320172490 · ОГРН 1092366001683 · КПП 770501001</span></div>
-      <div><a href="mailto:Info@corp-rs.ru">Info@corp-rs.ru</a><a href="#top">Наверх ↑</a></div>
+    <div class="wrap footer__inner">
+      <div><strong>ООО «КОРПОРАЦИЯ РЕСУРС СТРОЙ»</strong><span>ИНН 2320172490 · ОГРН 1092366001683</span></div>
+      <a href="#top">Наверх ↑</a>
     </div>
   </footer>
 </body>
