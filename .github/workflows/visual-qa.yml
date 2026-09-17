@@ -1,0 +1,76 @@
+name: Visual QA
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/visual-qa-http.log 2>&1 &
+          echo $! > /tmp/visual-qa-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/visual-qa-http.log
+          exit 1
+
+      - name: Capture screenshots and run checks
+        id: visual
+        continue-on-error: true
+        env:
+          VISUAL_QA_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/visual-qa.mjs
+
+      - name: Publish report to job summary
+        if: always()
+        run: |
+          if [ -f visual-qa-output/report.md ]; then
+            cat visual-qa-output/report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "# Visual QA report" >> "$GITHUB_STEP_SUMMARY"
+            echo "No report was generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-qa-${{ github.sha }}
+          path: visual-qa-output
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Fail job on fatal visual checks
+        if: steps.visual.outcome == 'failure'
+        run: exit 1
