@@ -1,76 +1,38 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Простор RS 8×8 — 90 м², 4 спальни</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="description" content="Простор RS 8×8 — компактный двухэтажный дом 90 м² с четырьмя спальнями для семьи с детьми.">
+  <meta name="theme-color" content="#f3f1ec">
+  <title>Простор RS 8×8 — 90 м², 4 спальни</title>
   <link rel="stylesheet" href="../styles.css">
+  <script defer src="../script.js"></script>
 </head>
 <body class="project-page">
-  <header class="header header-light" data-header>
-    <a class="logo" href="../index.html"><span class="logo-mark">RS</span><span>ПРОСТОР</span></a>
-    <nav class="nav"><a href="../index.html#projects">Проекты</a><a href="#plan">Планировка</a><a href="#gallery">Экстерьер</a><a href="#contact">Контакты</a></nav>
-    <a class="header-cta" href="tel:+79255007779">+7 925 500-77-79</a>
-    <button class="menu" aria-label="Открыть меню" aria-expanded="false"><span></span><span></span></button>
+  <header class="site-header" id="top">
+    <div class="shell header-inner">
+      <a class="brand" href="../index.html">ПРОСТОР</a>
+      <nav class="desktop-nav"><a href="../index.html#projects">Проекты</a><a href="#gallery">Галерея</a><a href="#layout">Планировка</a><a href="#contacts">Контакты</a></nav>
+      <div class="header-actions"><a class="phone" href="tel:+79255007779">+7 925 500-77-79</a><a class="header-cta" href="#contacts">Получить расчёт</a><button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Открыть меню"><span></span><span></span></button></div>
+    </div>
+    <nav class="mobile-nav" id="mobile-menu" aria-hidden="true"><a href="../index.html#projects">Проекты</a><a href="#gallery">Галерея</a><a href="#layout">Планировка</a><a href="#contacts">Контакты</a></nav>
   </header>
-  <div class="mobile-nav" data-mobile-nav><a href="../index.html#projects">Все проекты</a><a href="#plan">Планировка</a><a href="#gallery">Экстерьер</a><a href="#contact">Контакты</a></div>
-
   <main>
     <section class="project-hero">
-      <img src="../assets/rs8-front.webp" alt="Простор RS 8×8 — внешний вид" fetchpriority="high">
+      <img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.png" alt="Простор RS 8×8 — внешний вид дома">
       <div class="project-hero-shade"></div>
-      <a class="back-link" href="../index.html#projects">← Все проекты</a>
-      <div class="project-hero-title"><span>Проект 01</span><h1>Простор<br>RS 8×8</h1></div>
-      <div class="project-hero-specs"><div><span>Площадь</span><b>90 м²</b></div><div><span>Размер</span><b>8×8 м</b></div><div><span>Этажи</span><b>2</b></div><div><span>Спальни</span><b>4</b></div></div>
-    </section>
-
-    <section class="project-lead wrap">
-      <div class="intro-label">Дом для семьи</div>
-      <div><h2>Компактный снаружи.<br><span>Продуманный внутри.</span></h2><p>Компактный двухэтажный дом 8×8 м, 90 м² с удобной планировкой для семьи с детьми. Четыре спальни — две на первом этаже и две на втором, просторная кухня-гостиная, санузел и бойлерная.</p><p>Практичный вариант для комфортной семейной жизни без лишних площадей и сложных решений.</p></div>
-    </section>
-
-    <section class="photo-pair wrap" id="gallery">
-      <figure><img src="../assets/rs8-front.webp" alt="Простор RS 8×8 — фасад и терраса"><figcaption><span>01</span>Главный фасад</figcaption></figure>
-      <figure><img src="../assets/rs8-rear.webp" alt="Простор RS 8×8 — задний и боковой фасад"><figcaption><span>02</span>Боковой фасад</figcaption></figure>
-    </section>
-
-    <section class="plan-section" id="plan">
-      <div class="wrap plan-heading"><span>Планировка</span><h2>Четыре спальни<br>на двух этажах.</h2><p>Ниже — базовый вариант организации пространства для этой модели. Рабочая планировка уточняется перед строительством.</p></div>
-      <div class="wrap plans">
-        <article class="floorplan">
-          <div class="floorplan-head"><span>01 этаж</span><b>Общая зона + 2 спальни</b></div>
-          <div class="plan-box first-floor">
-            <div class="room living"><strong>Кухня-гостиная</strong><span>≈ 24 м²</span></div>
-            <div class="room bed1"><strong>Спальня 1</strong><span>≈ 10 м²</span></div>
-            <div class="room bed2"><strong>Спальня 2</strong><span>≈ 10 м²</span></div>
-            <div class="room hall"><strong>Холл + лестница</strong></div>
-            <div class="room bath"><strong>С/у</strong><span>≈ 5 м²</span></div>
-            <div class="room boiler"><strong>Бойлерная</strong><span>≈ 4 м²</span></div>
-          </div>
-        </article>
-        <article class="floorplan">
-          <div class="floorplan-head"><span>02 этаж</span><b>Приватная зона</b></div>
-          <div class="plan-box second-floor">
-            <div class="room bed3"><strong>Спальня 3</strong><span>≈ 14 м²</span></div>
-            <div class="room bed4"><strong>Спальня 4</strong><span>≈ 14 м²</span></div>
-            <div class="room upperhall"><strong>Холл</strong><span>лестница + хранение</span></div>
-          </div>
-        </article>
+      <div class="shell project-hero-content">
+        <div><p class="eyebrow light">Проект 01 · постоянное проживание</p><h1>Простор<br>RS 8×8</h1></div>
+        <div class="project-hero-meta"><div><strong>90 м²</strong><span>площадь</span></div><div><strong>4</strong><span>спальни</span></div><div><strong>2</strong><span>этажа</span></div><div><strong>8×8 м</strong><span>габариты</span></div></div>
       </div>
     </section>
-
-    <section class="spec-section wrap">
-      <div class="intro-label">Характеристики</div>
-      <dl class="big-specs">
-        <div><dt>Площадь дома</dt><dd>90 м²</dd></div><div><dt>Габариты</dt><dd>8 × 8 м</dd></div><div><dt>Этажность</dt><dd>2 этажа</dd></div><div><dt>Спальни</dt><dd>4</dd></div><div><dt>Кухня-гостиная</dt><dd>просторная общая зона</dd></div><div><dt>Технические помещения</dt><dd>санузел + бойлерная</dd></div>
-      </dl>
-    </section>
-
-    <section class="project-note"><div class="wrap"><span>Что дальше</span><h2>Покажем дом снаружи, внутри и подберём планировку под вашу семью.</h2><p>На следующем этапе добавим интерьерные визуализации, дополнительные ракурсы фасада и альтернативный вариант планировки.</p></div></section>
-
-    <section class="contact" id="contact"><div class="wrap contact-grid"><div><span>Обсудить RS 8×8</span><h2>Получить расчёт<br>по проекту.</h2></div><div class="contact-links"><a href="tel:+79255007779"><span>Позвонить</span><b>+7 925 500-77-79</b><i>↗</i></a><a href="mailto:Info@corp-rs.ru"><span>Написать</span><b>Info@corp-rs.ru</b><i>↗</i></a></div></div></section>
+    <section class="project-intro section"><div class="shell project-intro-grid"><p class="eyebrow">О проекте</p><div><h2>Компактный семейный дом без лишней площади.</h2><p>Простор RS 8×8 — двухэтажный дом площадью около 90 м² с удобной планировкой для семьи с детьми. Четыре спальни — две на первом этаже и две на втором, просторная кухня-гостиная, санузел и бойлерная. Практичный вариант для комфортной семейной жизни без сложных решений.</p></div></div></section>
+    <section class="project-gallery section" id="gallery"><div class="shell"><div class="gallery-head"><p class="eyebrow">Внешний вид</p><span>Два ракурса одного проекта</span></div><div class="gallery-grid"><figure><img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-master-hero.png" alt="Простор RS 8×8 — боковой фасад" loading="lazy"><figcaption>Боковой фасад</figcaption></figure><figure><img src="https://prostor-rs-homes.starmedved.chatgpt.site/assets/houses/prostor-front-left.png" alt="Простор RS 8×8 — входная группа" loading="lazy"><figcaption>Входная группа и крытая терраса</figcaption></figure></div></div></section>
+    <section class="layout-section section" id="layout"><div class="shell layout-grid"><div><p class="eyebrow">Планировка</p><h2>Четыре спальни<br>на двух этажах</h2><p>Планировка организована так, чтобы на первом этаже оставались основные ежедневные функции, а второй этаж добавлял приватные комнаты без увеличения пятна застройки.</p></div><div class="layout-list"><div class="layout-level"><span>1 этаж</span><ul><li>Кухня-гостиная</li><li>2 спальни</li><li>Санузел</li><li>Бойлерная</li><li>Прихожая / холл</li></ul></div><div class="layout-level"><span>2 этаж</span><ul><li>2 спальни</li><li>Холл</li><li>Зоны хранения по конфигурации проекта</li></ul></div><p class="layout-note">Точный рабочий план с размерами размещаем на странице после привязки к финальному комплекту чертежей.</p></div></div></section>
+    <section class="project-details section"><div class="shell"><p class="eyebrow">Характеристики</p><dl class="details-table"><div><dt>Площадь</dt><dd>≈ 90 м²</dd></div><div><dt>Габариты</dt><dd>8×8 м</dd></div><div><dt>Этажность</dt><dd>2 этажа</dd></div><div><dt>Спальни</dt><dd>4</dd></div><div><dt>Кухня-гостиная</dt><dd>просторная общая зона</dd></div><div><dt>Техническое помещение</dt><dd>бойлерная</dd></div></dl></div></section>
+    <section class="contact" id="contacts"><div class="shell contact-grid"><div><p class="eyebrow light">Простор RS 8×8</p><h2>Получить расчёт<br>под ваш участок.</h2></div><div class="contact-info"><a class="contact-phone" href="tel:+79255007779">+7 925 500-77-79</a><a href="mailto:Info@corp-rs.ru">Info@corp-rs.ru</a><p>Москва и Московская область</p><a class="button button-outline" href="tel:+79255007779">Обсудить проект <span class="arrow-line" aria-hidden="true"></span></a></div></div></section>
   </main>
-  <footer class="footer wrap"><a href="../index.html#projects">← Все проекты</a><span>© 2026 Корпорация РС</span></footer>
-  <script src="../script.js"></script>
+  <footer class="footer"><div class="shell footer-inner"><a href="../index.html#projects">← Все проекты</a><a href="#top">Наверх ↑</a></div></footer>
 </body>
 </html>
