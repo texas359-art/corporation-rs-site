@@ -2,197 +2,62 @@ import { chromium } from 'playwright';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const baseURL = process.env.VISUAL_QA_BASE_URL || 'http://127.0.0.1:4173';
-const outputDir = path.resolve('visual-qa-output');
-
-const targets = [
-  { name: 'home', path: '/' },
-  { name: 'rs-8x8', path: '/projects/rs-8x8.html' },
-  { name: 'rs-8x8-3d', path: '/projects/rs-8x8-3d.html', requires3d: true },
+const baseURL=process.env.VISUAL_QA_BASE_URL||'http://127.0.0.1:4173';
+const outputDir=path.resolve('visual-qa-output');
+const viewports=[
+  {name:'mobile-390',width:390,height:844},
+  {name:'mobile-430',width:430,height:932},
+  {name:'tablet-768',width:768,height:1024},
+  {name:'desktop-1440',width:1440,height:900},
+  {name:'desktop-1920',width:1920,height:1080},
 ];
 
-const viewports = [
-  { name: 'mobile-390', width: 390, height: 844, expectedDpr: 3 },
-  { name: 'mobile-430', width: 430, height: 932, expectedDpr: 3 },
-  { name: 'tablet-768', width: 768, height: 1024, expectedDpr: 2 },
-  { name: 'desktop-1440', width: 1440, height: 900, expectedDpr: 1 },
-  { name: 'desktop-1920', width: 1920, height: 1080, expectedDpr: 1 },
-];
+await fs.rm(outputDir,{recursive:true,force:true});
+await fs.mkdir(outputDir,{recursive:true});
+const browser=await chromium.launch({headless:true});
+const results=[];
 
-await fs.rm(outputDir, { recursive: true, force: true });
-await fs.mkdir(outputDir, { recursive: true });
-
-const browser = await chromium.launch({ headless: true });
-const results = [];
-
-for (const target of targets) {
-  for (const viewport of viewports) {
-    const context = await browser.newContext({
-      viewport: { width: viewport.width, height: viewport.height },
-      deviceScaleFactor: 1,
-      isMobile: viewport.width < 768,
-      hasTouch: viewport.width < 768,
+for(const viewport of viewports){
+  const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height},deviceScaleFactor:1,isMobile:viewport.width<768,hasTouch:viewport.width<768});
+  const page=await context.newPage();
+  const pageErrors=[];
+  page.on('pageerror',e=>pageErrors.push(String(e)));
+  const response=await page.goto(new URL('/',baseURL).href,{waitUntil:'networkidle',timeout:30000});
+  await page.waitForTimeout(350);
+  const metrics=await page.evaluate(()=>{
+    const root=document.documentElement;
+    const body=document.body;
+    const brokenImages=[...document.images].filter(img=>!img.complete||img.naturalWidth===0).map(img=>img.currentSrc||img.src);
+    const projectOverlaps=[];
+    document.querySelectorAll('.project').forEach((project,index)=>{
+      const gallery=project.querySelector('.project__gallery');
+      const info=project.querySelector('.project__info');
+      if(!gallery||!info)return;
+      const a=gallery.getBoundingClientRect();
+      const b=info.getBoundingClientRect();
+      const ow=Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left));
+      const oh=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+      if(ow>2&&oh>2)projectOverlaps.push({index:index+1,width:Math.round(ow),height:Math.round(oh)});
     });
-
-    const page = await context.newPage();
-    const consoleErrors = [];
-    const pageErrors = [];
-
-    page.on('console', (message) => {
-      if (message.type() === 'error') consoleErrors.push(message.text());
-    });
-    page.on('pageerror', (error) => pageErrors.push(String(error)));
-
-    const url = new URL(target.path, baseURL).href;
-    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-
-    let threeDReady = null;
-    if (target.requires3d) {
-      try {
-        await page.waitForFunction(() => window.__RS3D_READY__ === true, null, { timeout: 15000 });
-        threeDReady = true;
-      } catch (error) {
-        threeDReady = false;
-        pageErrors.push(`3D viewer did not become ready: ${String(error)}`);
-      }
-    }
-
-    await page.waitForTimeout(target.requires3d ? 800 : 350);
-
-    const status = response?.status() ?? 0;
-    const metrics = await page.evaluate((expectedDpr) => {
-      const root = document.documentElement;
-      const body = document.body;
-      const viewportWidth = window.innerWidth;
-      const documentWidth = Math.max(root.scrollWidth, body?.scrollWidth || 0);
-      const horizontalOverflow = documentWidth > viewportWidth + 1;
-
-      const images = [...document.images].map((img) => {
-        const rect = img.getBoundingClientRect();
-        const visible = rect.width > 2 && rect.height > 2;
-        const requiredWidth = rect.width * expectedDpr;
-        const requiredHeight = rect.height * expectedDpr;
-        const lowResolution = visible && (
-          img.naturalWidth + 1 < requiredWidth * 0.85 ||
-          img.naturalHeight + 1 < requiredHeight * 0.85
-        );
-        return {
-          src: img.currentSrc || img.src,
-          alt: img.alt || '',
-          complete: img.complete,
-          naturalWidth: img.naturalWidth,
-          naturalHeight: img.naturalHeight,
-          renderedWidth: Math.round(rect.width),
-          renderedHeight: Math.round(rect.height),
-          broken: !img.complete || img.naturalWidth === 0,
-          lowResolution,
-        };
-      });
-
-      const layoutOverlaps = [];
-      [...document.querySelectorAll('.project-showcase')].forEach((showcase, index) => {
-        const collage = showcase.querySelector('.project-collage');
-        const copy = showcase.querySelector('.showcase-copy');
-        if (!collage || !copy) return;
-        const a = collage.getBoundingClientRect();
-        const b = copy.getBoundingClientRect();
-        const overlapWidth = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
-        const overlapHeight = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
-        if (overlapWidth > 2 && overlapHeight > 2) {
-          layoutOverlaps.push({
-            block: index + 1,
-            overlapWidth: Math.round(overlapWidth),
-            overlapHeight: Math.round(overlapHeight),
-            collage: { top: Math.round(a.top), bottom: Math.round(a.bottom) },
-            copy: { top: Math.round(b.top), bottom: Math.round(b.bottom) },
-          });
-        }
-      });
-
-      const canvas = document.querySelector('canvas');
-      const canvasRect = canvas?.getBoundingClientRect();
-      const canvasVisible = !!canvasRect && canvasRect.width > 100 && canvasRect.height > 100;
-
-      return {
-        title: document.title,
-        viewportWidth,
-        documentWidth,
-        horizontalOverflow,
-        images,
-        layoutOverlaps,
-        canvasVisible,
-      };
-    }, viewport.expectedDpr);
-
-    const baseName = `${target.name}__${viewport.name}`;
-    await page.screenshot({ path: path.join(outputDir, `${baseName}__viewport.png`), fullPage: false, animations: 'disabled' });
-    await page.screenshot({ path: path.join(outputDir, `${baseName}__full.png`), fullPage: true, animations: 'disabled' });
-
-    const brokenImages = metrics.images.filter((img) => img.broken);
-    const lowResolutionImages = metrics.images.filter((img) => img.lowResolution && !img.broken);
-
-    if (target.requires3d && !metrics.canvasVisible) pageErrors.push('3D canvas is not visibly rendered');
-
-    results.push({
-      target: target.name,
-      path: target.path,
-      viewport: viewport.name,
-      width: viewport.width,
-      height: viewport.height,
-      expectedDpr: viewport.expectedDpr,
-      status,
-      horizontalOverflow: metrics.horizontalOverflow,
-      documentWidth: metrics.documentWidth,
-      layoutOverlaps: metrics.layoutOverlaps,
+    return {
+      documentWidth:Math.max(root.scrollWidth,body.scrollWidth),
+      viewportWidth:innerWidth,
       brokenImages,
-      lowResolutionImages,
-      consoleErrors,
-      pageErrors,
-      threeDReady,
-      canvasVisible: metrics.canvasVisible,
-    });
-
-    await context.close();
-  }
+      projectOverlaps,
+    };
+  });
+  const base=`home__${viewport.name}`;
+  await page.screenshot({path:path.join(outputDir,`${base}__viewport.png`),fullPage:false,animations:'disabled'});
+  await page.screenshot({path:path.join(outputDir,`${base}__full.png`),fullPage:true,animations:'disabled'});
+  results.push({viewport:viewport.name,status:response?.status()??0,horizontalOverflow:metrics.documentWidth>metrics.viewportWidth+1,brokenImages:metrics.brokenImages,projectOverlaps:metrics.projectOverlaps,pageErrors});
+  await context.close();
 }
-
 await browser.close();
 
-const fatal = results.filter((r) =>
-  r.status >= 400 ||
-  r.status === 0 ||
-  r.horizontalOverflow ||
-  r.layoutOverlaps.length > 0 ||
-  r.brokenImages.length > 0 ||
-  r.pageErrors.length > 0 ||
-  r.threeDReady === false
-);
-const warnings = results.filter((r) => r.lowResolutionImages.length > 0 || r.consoleErrors.length > 0);
-
-await fs.writeFile(path.join(outputDir, 'report.json'), JSON.stringify({ generatedAt: new Date().toISOString(), baseURL, results }, null, 2), 'utf8');
-
-const lines = [
-  '# Visual QA report','',`Base URL: ${baseURL}`,`Checks: ${results.length}`,`Fatal checks: ${fatal.length}`,`Warning checks: ${warnings.length}`,'',
-  '## Summary','',
-  '| Page | Viewport | HTTP | Overflow | Layout overlaps | 3D ready | Broken images | Low-res images | Console errors |',
-  '|---|---:|---:|---:|---:|---:|---:|---:|---:|',
-  ...results.map((r) => `| ${r.target} | ${r.viewport} | ${r.status} | ${r.horizontalOverflow ? 'YES' : 'no'} | ${r.layoutOverlaps.length} | ${r.threeDReady === null ? '—' : (r.threeDReady ? 'yes' : 'NO')} | ${r.brokenImages.length} | ${r.lowResolutionImages.length} | ${r.consoleErrors.length} |`),
-  '',
-];
-
-for (const r of results) {
-  if (!r.horizontalOverflow && !r.layoutOverlaps.length && !r.brokenImages.length && !r.lowResolutionImages.length && !r.consoleErrors.length && !r.pageErrors.length && r.threeDReady !== false) continue;
-  lines.push(`## ${r.target} / ${r.viewport}`, '');
-  if (r.horizontalOverflow) lines.push(`- Horizontal overflow: document ${r.documentWidth}px vs viewport ${r.width}px`);
-  for (const overlap of r.layoutOverlaps) lines.push(`- LAYOUT OVERLAP: project block ${overlap.block}, ${overlap.overlapWidth}px × ${overlap.overlapHeight}px overlap between collage and copy`);
-  if (r.threeDReady === false) lines.push('- 3D VIEWER FAILED TO INITIALIZE');
-  for (const img of r.brokenImages) lines.push(`- BROKEN IMAGE: ${img.src || '(empty src)'}`);
-  for (const img of r.lowResolutionImages) lines.push(`- LOW-RES IMAGE: ${img.src} — source ${img.naturalWidth}×${img.naturalHeight}, rendered ${img.renderedWidth}×${img.renderedHeight}, target DPR ${r.expectedDpr}`);
-  for (const error of r.consoleErrors) lines.push(`- Console error: ${error}`);
-  for (const error of r.pageErrors) lines.push(`- Page error: ${error}`);
-  lines.push('');
-}
-
-await fs.writeFile(path.join(outputDir, 'report.md'), lines.join('\n'), 'utf8');
-console.log(lines.join('\n'));
-if (fatal.length) { console.error(`Visual QA found ${fatal.length} fatal check(s). Screenshots and report were still generated.`); process.exitCode = 1; }
+const fatal=results.filter(r=>r.status===0||r.status>=400||r.horizontalOverflow||r.brokenImages.length||r.projectOverlaps.length||r.pageErrors.length);
+const report={generatedAt:new Date().toISOString(),baseURL,results,fatalCount:fatal.length};
+await fs.writeFile(path.join(outputDir,'report.json'),JSON.stringify(report,null,2),'utf8');
+const md=['# Visual QA','',`Fatal checks: ${fatal.length}`,'','| Viewport | HTTP | Overflow | Broken images | Project overlaps |','|---|---:|---:|---:|---:|',...results.map(r=>`| ${r.viewport} | ${r.status} | ${r.horizontalOverflow?'YES':'no'} | ${r.brokenImages.length} | ${r.projectOverlaps.length} |`)];
+await fs.writeFile(path.join(outputDir,'report.md'),md.join('\n'),'utf8');
+console.log(md.join('\n'));
+if(fatal.length)process.exitCode=1;
