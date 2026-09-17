@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://texas359-art.github.io/corporation-rs-site/sitemap.xml
