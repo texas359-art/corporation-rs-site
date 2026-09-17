@@ -44,7 +44,7 @@ for (const target of targets) {
 
     const url = new URL(target.path, baseURL).href;
     const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(350);
 
     const status = response?.status() ?? 0;
     const metrics = await page.evaluate((expectedDpr) => {
@@ -76,12 +76,33 @@ for (const target of targets) {
         };
       });
 
+      const layoutOverlaps = [];
+      [...document.querySelectorAll('.project-showcase')].forEach((showcase, index) => {
+        const collage = showcase.querySelector('.project-collage');
+        const copy = showcase.querySelector('.showcase-copy');
+        if (!collage || !copy) return;
+        const a = collage.getBoundingClientRect();
+        const b = copy.getBoundingClientRect();
+        const overlapWidth = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
+        const overlapHeight = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+        if (overlapWidth > 2 && overlapHeight > 2) {
+          layoutOverlaps.push({
+            block: index + 1,
+            overlapWidth: Math.round(overlapWidth),
+            overlapHeight: Math.round(overlapHeight),
+            collage: { top: Math.round(a.top), bottom: Math.round(a.bottom) },
+            copy: { top: Math.round(b.top), bottom: Math.round(b.bottom) },
+          });
+        }
+      });
+
       return {
         title: document.title,
         viewportWidth,
         documentWidth,
         horizontalOverflow,
         images,
+        layoutOverlaps,
       };
     }, viewport.expectedDpr);
 
@@ -110,6 +131,7 @@ for (const target of targets) {
       status,
       horizontalOverflow: metrics.horizontalOverflow,
       documentWidth: metrics.documentWidth,
+      layoutOverlaps: metrics.layoutOverlaps,
       brokenImages,
       lowResolutionImages,
       consoleErrors,
@@ -126,6 +148,7 @@ const fatal = results.filter((r) =>
   r.status >= 400 ||
   r.status === 0 ||
   r.horizontalOverflow ||
+  r.layoutOverlaps.length > 0 ||
   r.brokenImages.length > 0 ||
   r.pageErrors.length > 0
 );
@@ -147,16 +170,17 @@ const lines = [
   '',
   '## Summary',
   '',
-  '| Page | Viewport | HTTP | Overflow | Broken images | Low-res images | Console errors |',
-  '|---|---:|---:|---:|---:|---:|---:|',
-  ...results.map((r) => `| ${r.target} | ${r.viewport} | ${r.status} | ${r.horizontalOverflow ? 'YES' : 'no'} | ${r.brokenImages.length} | ${r.lowResolutionImages.length} | ${r.consoleErrors.length} |`),
+  '| Page | Viewport | HTTP | Overflow | Layout overlaps | Broken images | Low-res images | Console errors |',
+  '|---|---:|---:|---:|---:|---:|---:|---:|',
+  ...results.map((r) => `| ${r.target} | ${r.viewport} | ${r.status} | ${r.horizontalOverflow ? 'YES' : 'no'} | ${r.layoutOverlaps.length} | ${r.brokenImages.length} | ${r.lowResolutionImages.length} | ${r.consoleErrors.length} |`),
   '',
 ];
 
 for (const r of results) {
-  if (!r.horizontalOverflow && !r.brokenImages.length && !r.lowResolutionImages.length && !r.consoleErrors.length && !r.pageErrors.length) continue;
+  if (!r.horizontalOverflow && !r.layoutOverlaps.length && !r.brokenImages.length && !r.lowResolutionImages.length && !r.consoleErrors.length && !r.pageErrors.length) continue;
   lines.push(`## ${r.target} / ${r.viewport}`, '');
   if (r.horizontalOverflow) lines.push(`- Horizontal overflow: document ${r.documentWidth}px vs viewport ${r.width}px`);
+  for (const overlap of r.layoutOverlaps) lines.push(`- LAYOUT OVERLAP: project block ${overlap.block}, ${overlap.overlapWidth}px × ${overlap.overlapHeight}px overlap between collage and copy`);
   for (const img of r.brokenImages) lines.push(`- BROKEN IMAGE: ${img.src || '(empty src)'}`);
   for (const img of r.lowResolutionImages) lines.push(`- LOW-RES IMAGE: ${img.src} — source ${img.naturalWidth}×${img.naturalHeight}, rendered ${img.renderedWidth}×${img.renderedHeight}, target DPR ${r.expectedDpr}`);
   for (const error of r.consoleErrors) lines.push(`- Console error: ${error}`);
@@ -165,7 +189,6 @@ for (const r of results) {
 }
 
 await fs.writeFile(path.join(outputDir, 'report.md'), lines.join('\n'), 'utf8');
-
 console.log(lines.join('\n'));
 
 if (fatal.length) {
