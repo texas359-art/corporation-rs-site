@@ -8,53 +8,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Evaluate boundary move scenarios
+      - name: Final road-network audit for five routes
         shell: bash
         run: |
           cat > /tmp/audit.py <<'PY'
-          import re,json,urllib.request,copy
+          import re,json,urllib.request,time
           m=open("mfc-map/map.js",encoding="utf-8").read()
           d=open("mfc-map/data.js",encoding="utf-8").read()
           block=re.search(r'const COORDS=\{(.*?)\};',m,re.S).group(1)
           coords={int(n):(float(lat),float(lon)) for n,lat,lon in re.findall(r'(\d+):\[([0-9.]+),([0-9.]+)\]',block)}
           arr=json.loads(re.search(r'window\.MFC=(\[.*\]);\s*$',d,re.S).group(1))
-          nums=[r[0] for r in arr]; idx={n:i for i,n in enumerate(nums)}
-          base={t:[r[0] for r in arr if r[1]==t] for t in ["М1","М2","М3","М4","М5"]}
-          coordstr=";".join(f"{coords[n][1]},{coords[n][0]}" for n in nums)
-          req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration",headers={"User-Agent":"MFC-route-scenario-audit/1.0"})
-          with urllib.request.urlopen(req,timeout=120) as r:data=json.load(r)
-          dur=data["durations"]
-          def metrics(mem):
-              vals=[]
-              for i,a in enumerate(mem):
-                  for b in mem[i+1:]:
-                      x=dur[idx[a]][idx[b]]
-                      if x is not None: vals.append(x/60)
-              vals.sort()
-              return len(mem),sum(vals)/len(vals),vals[int(.9*(len(vals)-1))],max(vals)
-          def score(cl):
-              # transport load proxy: addresses * mean intra-route road minutes
-              return sum(metrics(mem)[0]*metrics(mem)[1] for mem in cl.values())
-          scenarios={
-            "CURRENT":[],
-            "MOVE13":[(13,"М2","М1")],
-            "MOVE11":[(11,"М2","М1")],
-            "MOVE13_11":[(13,"М2","М1"),(11,"М2","М1")],
-            "MOVE41":[(41,"М3","М1")],
-            "MOVE13_41":[(13,"М2","М1"),(41,"М3","М1")],
-            "MOVE13_11_41":[(13,"М2","М1"),(11,"М2","М1"),(41,"М3","М1")],
-            "BAL45":[(13,"М2","М1"),(11,"М2","М1"),(45,"М1","М5")],
-            "BAL5":[(13,"М2","М1"),(11,"М2","М1"),(5,"М1","М5")],
-            "BAL6":[(13,"М2","М1"),(11,"М2","М1"),(6,"М1","М5")],
-            "BAL9":[(13,"М2","М1"),(11,"М2","М1"),(9,"М1","М5")],
+          bynum={r[0]:r for r in arr}
+          routes={
+            "М1":[5,3,43,7,8,1,2,6,9,13,11],
+            "М2":[16,14,19,18,17,12,15],
+            "М3":[48,49,24,47,26,23,22,27,46,10,41],
+            "М4":[30,39,38,36,34,35,29,37,31,40,32],
+            "М5":[21,25,44,4,42,45,28,20,33,50,51],
           }
-          for name,moves in scenarios.items():
-              cl=copy.deepcopy(base)
-              for n,a,b in moves:
-                  cl[a].remove(n);cl[b].append(n)
-              print(f"SCENARIO|{name}|score={score(cl):.1f}")
-              for t in ["М1","М2","М3","М4","М5"]:
-                  n,mean,p90,mx=metrics(cl[t])
-                  print(f"METRIC|{name}|{t}|n={n}|mean={mean:.1f}|p90={p90:.1f}|max={mx:.1f}|load={n*mean:.1f}")
+          for team,order in routes.items():
+              cs=[coords[n] for n in order]
+              coordstr=";".join(f"{lon},{lat}" for lat,lon in cs)
+              req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration,distance",headers={"User-Agent":"MFC-final-route-audit/1.0"})
+              with urllib.request.urlopen(req,timeout=60) as r:data=json.load(r)
+              dur,dist=data["durations"],data["distances"]
+              seg=[]
+              for i in range(len(order)-1):
+                  seg.append((dur[i][i+1],dist[i][i+1],order[i],order[i+1]))
+              total=sum(x[0] for x in seg if x[0] is not None)/60
+              pairs=[]
+              for i in range(len(order)):
+                  for j in range(i+1,len(order)):
+                      if dur[i][j] is not None:pairs.append((dur[i][j],dist[i][j],order[i],order[j]))
+              pairs.sort(reverse=True)
+              vals=[x[0]/60 for x in pairs];vals.sort()
+              mean=sum(vals)/len(vals);p90=vals[int(.9*(len(vals)-1))];mx=max(vals)
+              print(f"ROUTE|{team}|n={len(order)}|ordered_total={total:.1f}m|mean_pair={mean:.1f}m|p90={p90:.1f}m|max={mx:.1f}m")
+              for sec,meters,a,b in sorted(seg,reverse=True)[:3]:
+                  print(f"SEG|{team}|{a}->{b}|{sec/60:.1f}m|{meters/1000:.1f}km|{bynum[a][2]} -> {bynum[b][2]}")
+              for sec,meters,a,b in pairs[:3]:
+                  print(f"PAIR|{team}|{a}<->{b}|{sec/60:.1f}m|{meters/1000:.1f}km|{bynum[a][2]} <-> {bynum[b][2]}")
+              time.sleep(1)
           PY
           python3 /tmp/audit.py
