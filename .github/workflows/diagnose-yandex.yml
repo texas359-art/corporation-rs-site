@@ -22,3 +22,5 @@ jobs:
           curl -sS -D /tmp/h2 -o /tmp/b2 "https://geocode-maps.yandex.ru/1.x/?apikey=$KEY&geocode=Moscow&format=json"
           head -1 /tmp/h2
           head -c 500 /tmp/b2; echo
+
+# rerun after geocoder attached 1790335676720
