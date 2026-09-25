@@ -69,6 +69,7 @@ async function geocode(item){
 async function init(){
   try{
     statusEl.textContent="Загружаю Яндекс Карты…";
+    if(typeof ymaps3==="undefined"){throw new Error(window.YA_SCRIPT_ERROR||"объект ymaps3 не появился: API не загрузился или ключ ещё не активирован для домена");}
     await ymaps3.ready;
     const {YMap,YMapDefaultSchemeLayer,YMapDefaultFeaturesLayer}=ymaps3;
     map=new YMap(document.getElementById("map"),{
