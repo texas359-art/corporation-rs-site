@@ -10,19 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Bump map asset version
+      - name: Bump optimized map asset version
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path("mfc-map/index.html")
           s=p.read_text(encoding="utf-8")
-          s=s.replace("build 5","build 8")
-          s=s.replace("map.js?v=5","map.js?v=8")
+          s=s.replace("build 8","build 9")
+          s=s.replace("data.js?v=5","data.js?v=9")
+          s=s.replace("map.js?v=8","map.js?v=9")
           p.write_text(s,encoding="utf-8")
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add mfc-map/index.html
-          git commit -m "Bump MFC map cache to build 8"
+          git commit -m "Publish optimized MFC routing build 9"
           git push
