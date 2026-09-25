@@ -1,0 +1,35 @@
+name: Geocode MFC Addresses
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/geocode-mfc.yml'
+jobs:
+  geocode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Geocode all addresses via Nominatim
+        shell: bash
+        run: |
+          cat > /tmp/geocode.py <<'PY'
+          import re, json, time, urllib.parse, urllib.request
+          s=open('mfc-map/data.js',encoding='utf-8').read()
+          arr=json.loads(re.search(r'window\.MFC=(\[.*\]);\s*$',s,re.S).group(1))
+          for row in arr:
+              n,team,district,address=row
+              q=urllib.parse.urlencode({'q':address+', Россия','format':'jsonv2','limit':1,'countrycodes':'ru','addressdetails':1})
+              req=urllib.request.Request('https://nominatim.openstreetmap.org/search?'+q,headers={'User-Agent':'MFC-route-map/1.0 contact=github-pages'})
+              try:
+                  with urllib.request.urlopen(req,timeout=20) as r:
+                      out=json.load(r)
+                  if out:
+                      x=out[0]
+                      print('GEO|%s|%s|%s|%s' % (n,x['lat'],x['lon'],x.get('display_name','').replace('|','/')),flush=True)
+                  else:
+                      print('MISS|%s|%s' % (n,address),flush=True)
+              except Exception as e:
+                  print('ERR|%s|%s' % (n,e),flush=True)
+              time.sleep(1.15)
+          PY
+          python3 /tmp/geocode.py
