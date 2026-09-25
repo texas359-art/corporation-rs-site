@@ -1,0 +1,70 @@
+name: Audit MFC Route Travel Times
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-mfc-routes.yml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare road-network travel times inside each route
+        shell: bash
+        run: |
+          cat > /tmp/audit.py <<'PY'
+          import re,json,urllib.request,urllib.parse,time,math
+          m=open("mfc-map/map.js",encoding="utf-8").read()
+          d=open("mfc-map/data.js",encoding="utf-8").read()
+          block=re.search(r'const COORDS=\{(.*?)\};',m,re.S).group(1)
+          coords={}
+          for n,lat,lon in re.findall(r'(\d+):\[([0-9.]+),([0-9.]+)\]',block):
+              coords[int(n)]=(float(lat),float(lon))
+          arr=json.loads(re.search(r'window\.MFC=(\[.*\]);\s*$',d,re.S).group(1))
+          bynum={r[0]:r for r in arr}
+          routes={
+            "М1":[45,5,3,43,7,8,1,2,6,9],
+            "М2":[16,14,19,18,17,13,12,15,11],
+            "М3":[48,49,24,47,26,23,22,27,46,10,41],
+            "М4":[30,39,38,36,34,35,29,37,31,40,32],
+            "М5":[21,25,44,4,42,28,20,33,50,51],
+          }
+          def fmt(sec):
+              if sec is None:return "-"
+              return f"{round(sec/60)} мин"
+          for team,order in routes.items():
+              cs=[coords[n] for n in order]
+              coordstr=";".join(f"{lon},{lat}" for lat,lon in cs)
+              url="https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration,distance"
+              req=urllib.request.Request(url,headers={"User-Agent":"MFC-route-audit/1.0"})
+              with urllib.request.urlopen(req,timeout=60) as r: data=json.load(r)
+              dur=data["durations"]; dist=data.get("distances")
+              # Consecutive route segments
+              seg=[]
+              for i in range(len(order)-1):
+                  sec=dur[i][i+1]; meters=dist[i][i+1] if dist else None
+                  seg.append((sec,meters,order[i],order[i+1]))
+              total=sum(x[0] for x in seg if x[0] is not None)
+              # Worst pair in full cluster
+              pairs=[]
+              for i in range(len(order)):
+                  for j in range(i+1,len(order)):
+                      if dur[i][j] is not None:pairs.append((dur[i][j],dist[i][j] if dist else None,order[i],order[j]))
+              pairs.sort(reverse=True)
+              # Per-point average drive to all route peers
+              avgs=[]
+              for i,n in enumerate(order):
+                  vals=[dur[i][j] for j in range(len(order)) if j!=i and dur[i][j] is not None]
+                  avgs.append((sum(vals)/len(vals),n))
+              avgs.sort(reverse=True)
+              print(f"ROUTE|{team}|objects={len(order)}|ordered_total={round(total/60)}min")
+              for sec,meters,a,b in sorted(seg,reverse=True)[:3]:
+                  km=(meters or 0)/1000
+                  print(f"SEG|{team}|{a}->{b}|{round(sec/60)}min|{km:.1f}km|{bynum[a][2]} -> {bynum[b][2]}")
+              for sec,meters,a,b in pairs[:3]:
+                  km=(meters or 0)/1000
+                  print(f"PAIR|{team}|{a}<->{b}|{round(sec/60)}min|{km:.1f}km|{bynum[a][2]} <-> {bynum[b][2]}")
+              for avg,n in avgs[:2]:
+                  print(f"OUTLIER|{team}|{n}|avg={round(avg/60)}min|{bynum[n][2]}|{bynum[n][3]}")
+              time.sleep(1.2)
+          PY
+          python3 /tmp/audit.py
