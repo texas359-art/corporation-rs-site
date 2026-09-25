@@ -24,3 +24,5 @@ jobs:
           head -c 500 /tmp/b2; echo
 
 # rerun after geocoder attached 1790335676720
+
+# check attached geocoder propagation 1790335733867
