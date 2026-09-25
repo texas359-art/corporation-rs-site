@@ -10,20 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Bump optimized map asset version
+      - name: Bump final service routes
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path("mfc-map/index.html")
           s=p.read_text(encoding="utf-8")
-          s=s.replace("build 8","build 9")
-          s=s.replace("data.js?v=5","data.js?v=9")
-          s=s.replace("map.js?v=8","map.js?v=9")
+          s=s.replace("build 9","build 10")
+          s=s.replace("data.js?v=9","data.js?v=10")
+          s=s.replace("map.js?v=9","map.js?v=10")
           p.write_text(s,encoding="utf-8")
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add mfc-map/index.html
-          git commit -m "Publish optimized MFC routing build 9"
+          git commit -m "Publish final service routes build 10"
           git push
