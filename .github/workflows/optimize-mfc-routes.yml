@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Evaluate operationally coherent five-route candidates
+      - name: Exhaustive boundary optimization with operational must-link groups
         shell: bash
         run: |
           cat > /tmp/eval.py <<'PY'
-          import re,json,urllib.request,statistics
+          import re,json,urllib.request,statistics,itertools
           m=open("mfc-map/map.js",encoding="utf-8").read()
           d=open("mfc-map/data.js",encoding="utf-8").read()
           block=re.search(r'const COORDS=\{(.*?)\};',m,re.S).group(1)
@@ -20,7 +20,7 @@ jobs:
           arr=json.loads(re.search(r'window\.MFC=(\[.*\]);\s*$',d,re.S).group(1))
           nums=[r[0] for r in arr];idx={n:i for i,n in enumerate(nums)}
           coordstr=";".join(f"{coords[n][1]},{coords[n][0]}" for n in nums)
-          req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration",headers={"User-Agent":"MFC-coherent-candidate-evaluator/1.0"})
+          req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration",headers={"User-Agent":"MFC-boundary-bruteforce/1.0"})
           with urllib.request.urlopen(req,timeout=120) as r:data=json.load(r)
           raw=data["durations"]
           S={(a,b):((raw[idx[a]][idx[b]]+raw[idx[b]][idx[a]])/120 if a!=b else 0.0) for a in nums for b in nums}
@@ -29,27 +29,36 @@ jobs:
               n=len(mem);mean=sum(vals)/len(vals);p90=vals[int(.9*(len(vals)-1))];mx=max(vals);load=n*mean
               return n,mean,p90,mx,load
           def score(routes):
-              loads=[met(v)[4] for v in routes.values()]
-              return sum(loads)+4*statistics.pstdev(loads)+1.1*max(loads)+.35*sum(met(v)[2] for v in routes.values())+.15*sum(met(v)[3] for v in routes.values())
+              ms=[met(v) for v in routes.values()]
+              loads=[x[4] for x in ms]
+              # Primary: balanced expected road burden. Secondary: tails and total burden.
+              return sum(loads)+4*statistics.pstdev(loads)+1.1*max(loads)+.35*sum(x[2] for x in ms)+.15*sum(x[3] for x in ms)
 
-          M1=[3,4,5,7,8,42,43,44,45,46]
-          M4=[29,30,31,32,34,35,36,37,38,39,40]
-          M5=[1,2,6,9,10,11,12,13,15,41]
-          pool=[14,16,17,18,19,20,21,22,23,24,25,26,27,28,33,47,48,49,50,51]
-          variants={
-            "A_TINAO_Teply_YasPair":[14,16,17,18,19,24,48,49],
-            "B_plus_Obruchevsky":[14,16,17,18,19,24,26,48,49],
-            "C_TINAO_Konkovo_YasPair":[14,16,17,18,19,47,48,49],
-            "D_plus_Teply_Konkovo_YasPair":[14,16,17,18,19,24,47,48,49],
-            "E_TINAO_Teply_Obruchevsky":[14,16,17,18,19,24,26],
-            "F_TINAO_YasPair":[14,16,17,18,19,48,49],
+          fixed={
+            "М1":[3,4,5,7,8,42,43,44,45,46],
+            "М2":[14,16,17,18,19],
+            "М3":[20,21,22,23,25,27,28,33,50,51],
+            "М4":[29,30,31,32,34,35,36,37,38,39,40],
+            "М5":[1,2,6,9,10,11,12,13,15,41],
           }
-          for name,m2 in variants.items():
-              m3=[n for n in pool if n not in m2]
-              routes={"М1":M1,"М2":m2,"М3":m3,"М4":M4,"М5":M5}
-              print(f"CANDIDATE|{name}|score={score(routes):.2f}")
-              for t,mem in routes.items():
-                  n,mean,p90,mx,load=met(mem)
-                  print(f"METRIC|{name}|{t}|n={n}|mean={mean:.1f}|p90={p90:.1f}|max={mx:.1f}|load={load:.1f}|members={','.join(map(str,sorted(mem)))}")
+          # Nearby/operationally linked addresses stay together.
+          blocks={"24":[24],"26":[26],"47":[47],"48+49":[48,49]}
+          targets=["М1","М2","М3","М5"]
+          sols=[]
+          keys=list(blocks)
+          for choices in itertools.product(targets, repeat=len(keys)):
+              routes={t:list(v) for t,v in fixed.items()}
+              mapping={}
+              for key,t in zip(keys,choices):
+                  routes[t]+=blocks[key];mapping[key]=t
+              if not all(7<=len(routes[t])<=13 for t in routes):continue
+              v=score(routes)
+              sols.append((v,mapping,routes))
+          sols.sort(key=lambda x:x[0])
+          for rank,(v,mapping,routes) in enumerate(sols[:20],1):
+              print(f"SOLUTION|{rank}|score={v:.2f}|blocks="+",".join(f"{k}->{mapping[k]}" for k in keys))
+              for t in ["М1","М2","М3","М4","М5"]:
+                  n,mean,p90,mx,load=met(routes[t])
+                  print(f"METRIC|{rank}|{t}|n={n}|mean={mean:.1f}|p90={p90:.1f}|max={mx:.1f}|load={load:.1f}|members={','.join(map(str,sorted(routes[t])))}")
           PY
           python3 /tmp/eval.py
