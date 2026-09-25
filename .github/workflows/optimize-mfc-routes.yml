@@ -6,13 +6,14 @@ on:
 jobs:
   optimize:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Build full 51x51 road matrix and optimize 5 clusters
+      - name: Fast global 51x51 road-time clustering
         shell: bash
         run: |
           cat > /tmp/opt.py <<'PY'
-          import re,json,urllib.request,random,math,statistics,copy
+          import re,json,urllib.request,random,math,copy
           random.seed(20260925)
 
           m=open("mfc-map/map.js",encoding="utf-8").read()
@@ -20,181 +21,129 @@ jobs:
           block=re.search(r'const COORDS=\{(.*?)\};',m,re.S).group(1)
           coords={int(n):(float(lat),float(lon)) for n,lat,lon in re.findall(r'(\d+):\[([0-9.]+),([0-9.]+)\]',block)}
           arr=json.loads(re.search(r'window\.MFC=(\[.*\]);\s*$',d,re.S).group(1))
-          nums=[r[0] for r in arr]
-          bynum={r[0]:r for r in arr}
-          idx={n:i for i,n in enumerate(nums)}
-
+          nums=[r[0] for r in arr]; bynum={r[0]:r for r in arr}; idx={n:i for i,n in enumerate(nums)}
           coordstr=";".join(f"{coords[n][1]},{coords[n][0]}" for n in nums)
-          url="https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration,distance"
-          req=urllib.request.Request(url,headers={"User-Agent":"MFC-global-route-optimizer/1.0"})
-          with urllib.request.urlopen(req,timeout=120) as r:
-              data=json.load(r)
-          dur=data["durations"]; dist=data["distances"]
-          D={(a,b):dur[idx[a]][idx[b]]/60 for a in nums for b in nums}
-          KM={(a,b):dist[idx[a]][idx[b]]/1000 for a in nums for b in nums}
-
-          # Symmetric planning time: average both directions to reduce one-way-road bias.
-          S={}
-          for a in nums:
-              for b in nums:
-                  S[a,b]=(D[a,b]+D[b,a])/2 if a!=b else 0.0
+          req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration",headers={"User-Agent":"MFC-global-route-optimizer-fast/1.0"})
+          with urllib.request.urlopen(req,timeout=120) as r:data=json.load(r)
+          dur=data["durations"]
+          S={(a,b):((dur[idx[a]][idx[b]]+dur[idx[b]][idx[a]])/120 if a!=b else 0.0) for a in nums for b in nums}
 
           current={t:[r[0] for r in arr if r[1]==t] for t in ["М1","М2","М3","М4","М5"]}
 
+          score_cache={}
           def cmets(mem):
               vals=[S[a,b] for i,a in enumerate(mem) for b in mem[i+1:]]
               vals.sort()
               if not vals:return (len(mem),0,0,0)
               return len(mem),sum(vals)/len(vals),vals[int(.9*(len(vals)-1))],max(vals)
-
           def cscore(mem):
+              key=tuple(sorted(mem))
+              if key in score_cache:return score_cache[key]
               n,mean,p90,mx=cmets(mem)
-              # Service burden: compactness weighted by number of assigned sites.
-              # P90/max protect against "one remote tail" hidden by a good average.
-              return n*mean + 0.55*p90 + 0.35*mx
+              v=n*mean+0.55*p90+0.35*mx+1.8*(n-10.2)**2
+              score_cache[key]=v
+              return v
+          def total(groups):return sum(cscore(g) for g in groups)
+          def valid(groups):return len(groups)==5 and sum(map(len,groups))==51 and all(7<=len(g)<=13 for g in groups)
 
-          def total(clusters):
-              # Mild count regularization only. Distance is the main driver.
-              score=sum(cscore(c) for c in clusters)
-              score += sum(1.8*(len(c)-10.2)**2 for c in clusters)
-              return score
-
-          def canonical(clusters):
-              return tuple(sorted(tuple(sorted(c)) for c in clusters))
-
-          def valid(clusters):
-              return len(clusters)==5 and all(7<=len(c)<=13 for c in clusters) and sum(map(len,clusters))==51
-
-          def improve(clusters,max_iter=500):
-              clusters=[list(c) for c in clusters]
-              best=total(clusters)
-              for _ in range(max_iter):
-                  best_move=None; best_val=best
-                  # single moves
-                  for i in range(5):
-                      if len(clusters[i])<=7: continue
-                      for a in list(clusters[i]):
-                          for j in range(5):
-                              if i==j or len(clusters[j])>=13: continue
-                              cc=[list(c) for c in clusters]
-                              cc[i].remove(a);cc[j].append(a)
-                              v=total(cc)
-                              if v<best_val-1e-8:
-                                  best_val=v;best_move=("m",i,j,a)
-                  # swaps
-                  for i in range(5):
-                      for j in range(i+1,5):
-                          for a in clusters[i]:
-                              for b in clusters[j]:
-                                  cc=[list(c) for c in clusters]
-                                  cc[i].remove(a);cc[j].remove(b)
-                                  cc[i].append(b);cc[j].append(a)
-                                  v=total(cc)
-                                  if v<best_val-1e-8:
-                                      best_val=v;best_move=("s",i,j,a,b)
-                  if not best_move: break
-                  if best_move[0]=="m":
-                      _,i,j,a=best_move
-                      clusters[i].remove(a);clusters[j].append(a)
-                  else:
-                      _,i,j,a,b=best_move
-                      clusters[i].remove(a);clusters[j].remove(b)
-                      clusters[i].append(b);clusters[j].append(a)
-                  best=best_val
-              return clusters,best
-
-          # Initial solutions: current + many road-time k-medoids style starts.
-          starts=[]
-          starts.append([list(current[t]) for t in ["М1","М2","М3","М4","М5"]])
-
-          def nearest_seed_assignment(seeds):
+          def assign(seeds):
               groups=[[s] for s in seeds]
-              remaining=[n for n in nums if n not in seeds]
-              # Hardest-to-place first: strongest preference gap between nearest/second nearest
-              ranked=[]
-              for n in remaining:
-                  ds=sorted((S[n,s],k) for k,s in enumerate(seeds))
-                  ranked.append((ds[1][0]-ds[0][0],n,ds))
-              ranked.sort(reverse=True)
-              for _,n,ds in ranked:
+              left=[n for n in nums if n not in seeds]
+              # hardest first, then choose nearest seed with capacity
+              hard=[]
+              for n in left:
+                  ds=sorted(S[n,s] for s in seeds)
+                  hard.append((ds[1]-ds[0],n))
+              for _,n in sorted(hard,reverse=True):
                   choices=sorted((S[n,seeds[k]],k) for k in range(5) if len(groups[k])<13)
-                  # keep enough room to satisfy lower bounds later
-                  chosen=choices[0][1]
-                  groups[chosen].append(n)
-              # repair groups below 7 by moving cheapest donors
-              for target in range(5):
-                  while len(groups[target])<7:
+                  groups[choices[0][1]].append(n)
+              # repair minimum size 7
+              for t in range(5):
+                  while len(groups[t])<7:
                       best=None
-                      for donor in range(5):
-                          if donor==target or len(groups[donor])<=7: continue
-                          for n in groups[donor]:
-                              if n==seeds[donor]: continue
-                              penalty=(sum(S[n,x] for x in groups[target])/max(1,len(groups[target])) -
-                                       sum(S[n,x] for x in groups[donor] if x!=n)/max(1,len(groups[donor])-1))
-                              if best is None or penalty<best[0]:
-                                  best=(penalty,donor,n)
-                      if best is None: break
-                      _,donor,n=best
-                      groups[donor].remove(n);groups[target].append(n)
+                      for dnr in range(5):
+                          if dnr==t or len(groups[dnr])<=7:continue
+                          for n in groups[dnr]:
+                              if n==seeds[dnr]:continue
+                              to=sum(S[n,x] for x in groups[t])/len(groups[t])
+                              fr=sum(S[n,x] for x in groups[dnr] if x!=n)/max(1,len(groups[dnr])-1)
+                              pen=to-fr
+                              if best is None or pen<best[0]:best=(pen,dnr,n)
+                      if best is None:break
+                      _,dnr,n=best;groups[dnr].remove(n);groups[t].append(n)
               return groups
 
-          # farthest-first and random diversified seeds
-          for start in random.sample(nums, min(20,len(nums))):
+          def refine(groups,passes=20):
+              groups=[list(g) for g in groups]
+              cur=total(groups)
+              for _ in range(passes):
+                  improved=False
+                  # best single move
+                  best=(cur,None)
+                  for i in range(5):
+                      if len(groups[i])<=7:continue
+                      for n in list(groups[i]):
+                          for j in range(5):
+                              if i==j or len(groups[j])>=13:continue
+                              ng_i=[x for x in groups[i] if x!=n];ng_j=groups[j]+[n]
+                              v=cur-cscore(groups[i])-cscore(groups[j])+cscore(ng_i)+cscore(ng_j)
+                              if v<best[0]-1e-7:best=(v,("m",i,j,n))
+                  # best swap
+                  for i in range(5):
+                      for j in range(i+1,5):
+                          for a in groups[i]:
+                              for b in groups[j]:
+                                  ni=[b if x==a else x for x in groups[i]]
+                                  nj=[a if x==b else x for x in groups[j]]
+                                  v=cur-cscore(groups[i])-cscore(groups[j])+cscore(ni)+cscore(nj)
+                                  if v<best[0]-1e-7:best=(v,("s",i,j,a,b))
+                  if best[1] is None:break
+                  mv=best[1]
+                  if mv[0]=="m":
+                      _,i,j,n=mv;groups[i].remove(n);groups[j].append(n)
+                  else:
+                      _,i,j,a,b=mv
+                      groups[i].remove(a);groups[j].remove(b);groups[i].append(b);groups[j].append(a)
+                  cur=best[0];improved=True
+              return groups,cur
+
+          starts=[[list(current[t]) for t in ["М1","М2","М3","М4","М5"]]]
+          # deterministic farthest-first starts
+          for start in nums[::3]:
               seeds=[start]
               while len(seeds)<5:
-                  cand=max((n for n in nums if n not in seeds),key=lambda n:min(S[n,s] for s in seeds))
-                  seeds.append(cand)
-              starts.append(nearest_seed_assignment(seeds))
+                  seeds.append(max((n for n in nums if n not in seeds),key=lambda n:min(S[n,s] for s in seeds)))
+              starts.append(assign(seeds))
+          # random seeds
+          for _ in range(60):
+              starts.append(assign(random.sample(nums,5)))
 
-          for _ in range(80):
-              seeds=random.sample(nums,5)
-              starts.append(nearest_seed_assignment(seeds))
-
-          # randomized balanced partitions around nearest road medoids
-          for _ in range(40):
-              seeds=random.sample(nums,5)
-              g=nearest_seed_assignment(seeds)
-              # random legal perturbations
-              for __ in range(20):
-                  i,j=random.sample(range(5),2)
-                  if len(g[i])>7 and len(g[j])<13:
-                      a=random.choice(g[i]);g[i].remove(a);g[j].append(a)
-              starts.append(g)
-
-          seen=set(); sols=[]
+          sols=[];seen=set()
           for st in starts:
-              if not valid(st): continue
-              opt,val=improve(st)
-              key=canonical(opt)
-              if key in seen: continue
-              seen.add(key);sols.append((val,opt))
+              if not valid(st):continue
+              g,v=refine(st,passes=12)
+              key=tuple(sorted(tuple(sorted(x)) for x in g))
+              if key not in seen:
+                  seen.add(key);sols.append((v,g))
           sols.sort(key=lambda x:x[0])
 
-          def label_clusters(clusters):
-              # Stable labels by broad geography:
-              # M2 = westernmost centroid (TiNAO);
-              # M4 = northernmost/central cluster;
-              # M1 = southeastern/southern;
-              # M3 = southwestern;
-              # M5 = remaining inner-south.
-              info=[]
-              for c in clusters:
-                  lat=sum(coords[n][0] for n in c)/len(c);lon=sum(coords[n][1] for n in c)/len(c)
-                  info.append([c,lat,lon])
-              # identify M2 westernmost
-              m2=min(info,key=lambda x:x[2]);rem=[x for x in info if x is not m2]
-              # M4 northernmost
-              m4=max(rem,key=lambda x:x[1]);rem=[x for x in rem if x is not m4]
-              # M1 easternmost among southern remainder
-              m1=max(rem,key=lambda x:x[2]);rem=[x for x in rem if x is not m1]
-              # M3 westernmost remaining, M5 other
-              m3=min(rem,key=lambda x:x[2]);m5=[x for x in rem if x is not m3][0]
+          # label by centroid geography
+          def label(groups):
+              inf=[]
+              for g in groups:
+                  lat=sum(coords[n][0] for n in g)/len(g);lon=sum(coords[n][1] for n in g)/len(g)
+                  inf.append([g,lat,lon])
+              m2=min(inf,key=lambda x:x[2]); rem=[x for x in inf if x is not m2]
+              m4=max(rem,key=lambda x:x[1]); rem=[x for x in rem if x is not m4]
+              m1=max(rem,key=lambda x:x[2]); rem=[x for x in rem if x is not m1]
+              m3=min(rem,key=lambda x:x[2]); m5=[x for x in rem if x is not m3][0]
               return {"М1":m1[0],"М2":m2[0],"М3":m3[0],"М4":m4[0],"М5":m5[0]}
 
-          print("CURRENT_SCORE|%.2f"%total([current[t] for t in ["М1","М2","М3","М4","М5"]]))
-          for rank,(val,cl) in enumerate(sols[:8],1):
-              lab=label_clusters(cl)
-              print(f"SOLUTION|{rank}|score={val:.2f}")
+          current_groups=[current[t] for t in ["М1","М2","М3","М4","М5"]]
+          print(f"CURRENT_SCORE|{total(current_groups):.2f}")
+          for rank,(v,g) in enumerate(sols[:6],1):
+              lab=label(g)
+              print(f"SOLUTION|{rank}|score={v:.2f}")
               for t in ["М1","М2","М3","М4","М5"]:
                   mem=sorted(lab[t]);n,mean,p90,mx=cmets(mem)
                   print(f"CLUSTER|{rank}|{t}|n={n}|mean={mean:.1f}|p90={p90:.1f}|max={mx:.1f}|members={','.join(map(str,mem))}")
