@@ -9,24 +9,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check API response used by the site
+      - name: Compare Yandex JS API v3 and 2.1
         shell: bash
         run: |
           set +e
-          API_URL=$(grep -o 'https://api-maps.yandex.ru/v3/?[^"]*' mfc-map/index.html | head -1)
-          curl -sS -D /tmp/headers.txt -o /tmp/body.js             -H 'Referer: https://texas359-art.github.io/corporation-rs-site/mfc-map/'             "$API_URL"
-          echo '--- STATUS/HEADERS ---'
-          sed -n '1,40p' /tmp/headers.txt
-          echo '--- BODY PREFIX ---'
-          head -c 500 /tmp/body.js || true
-          echo
-          echo '--- BYTES ---'
-          wc -c /tmp/body.js
-
-# retry after key activation
-
-# retry after referer save 1790334559007
-
-# test new key 1790334813874
-
-# retry new key after referer save 1790334896078
+          KEY=$(grep -o 'apikey=[^&"]*' mfc-map/index.html | head -1 | cut -d= -f2)
+          for VERSION in v3 2.1; do
+            if [ "$VERSION" = "v3" ]; then
+              URL="https://api-maps.yandex.ru/v3/?apikey=$KEY&lang=ru_RU"
+            else
+              URL="https://api-maps.yandex.ru/2.1/?apikey=$KEY&lang=ru_RU"
+            fi
+            echo "=== $VERSION ==="
+            curl -sS -D /tmp/h -o /tmp/b -H 'Referer: https://texas359-art.github.io/corporation-rs-site/mfc-map/' "$URL"
+            head -1 /tmp/h
+            head -c 160 /tmp/b
+            echo
+          done
