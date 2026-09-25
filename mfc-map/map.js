@@ -27,3 +27,5 @@ function loadV21(){return new Promise((resolve,reject)=>{if(window.ymaps)return 
 async function init(){try{statusEl.textContent="Загружаю Яндекс Карты…";await loadV21();await new Promise((resolve,reject)=>ymaps.ready(resolve,reject));map=new ymaps.Map("map",{center:[55.55,37.45],zoom:9,controls:["zoomControl"]},{suppressMapOpenBlock:true});const bounds=[];let count=0;for(const r of MFC){const [n,team,district,address]=r,p=COORDS[n];if(!p)continue;const item={n,team,district,address};const pm=new ymaps.Placemark(p,{iconContent:String(n)},{preset:"islands#circleIcon",iconColor:COLORS[team]});pm.events.add("click",()=>cardFor(item,p));groups[team].push(pm);map.geoObjects.add(pm);bounds.push(p);count++}if(bounds.length)map.setBounds(bounds,{checkZoomRange:true,zoomMargin:50});statusEl.textContent="На карте: "+count+" / 51 · координаты зафиксированы"}catch(e){console.error(e);statusEl.textContent="Ошибка загрузки Яндекс Карт: "+(e.message||e)}}
 init();
 // deploy build 8
+
+// optimized routing build 9
