@@ -1,0 +1,24 @@
+name: Diagnose Yandex Maps API
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/diagnose-yandex.yml'
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check API response used by the site
+        shell: bash
+        run: |
+          set +e
+          API_URL=$(grep -o 'https://api-maps.yandex.ru/v3/?[^"]*' mfc-map/index.html | head -1)
+          curl -sS -D /tmp/headers.txt -o /tmp/body.js             -H 'Referer: https://texas359-art.github.io/corporation-rs-site/mfc-map/'             "$API_URL"
+          echo '--- STATUS/HEADERS ---'
+          sed -n '1,40p' /tmp/headers.txt
+          echo '--- BODY PREFIX ---'
+          head -c 500 /tmp/body.js || true
+          echo
+          echo '--- BYTES ---'
+          wc -c /tmp/body.js
