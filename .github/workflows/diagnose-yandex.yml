@@ -22,3 +22,5 @@ jobs:
           echo
           echo '--- BYTES ---'
           wc -c /tmp/body.js
+
+# retry after key activation
