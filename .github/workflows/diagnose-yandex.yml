@@ -9,20 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compare Yandex JS API v3 and 2.1
+      - name: Check JS API and Geocoder products
         shell: bash
         run: |
           set +e
           KEY=$(grep -o 'apikey=[^&"]*' mfc-map/index.html | head -1 | cut -d= -f2)
-          for VERSION in v3 2.1; do
-            if [ "$VERSION" = "v3" ]; then
-              URL="https://api-maps.yandex.ru/v3/?apikey=$KEY&lang=ru_RU"
-            else
-              URL="https://api-maps.yandex.ru/2.1/?apikey=$KEY&lang=ru_RU"
-            fi
-            echo "=== $VERSION ==="
-            curl -sS -D /tmp/h -o /tmp/b -H 'Referer: https://texas359-art.github.io/corporation-rs-site/mfc-map/' "$URL"
-            head -1 /tmp/h
-            head -c 160 /tmp/b
-            echo
-          done
+          echo '=== JS API 2.1 ==='
+          curl -sS -D /tmp/h1 -o /tmp/b1 -H 'Referer: https://texas359-art.github.io/corporation-rs-site/mfc-map/' "https://api-maps.yandex.ru/2.1/?apikey=$KEY&lang=ru_RU"
+          head -1 /tmp/h1
+          head -c 120 /tmp/b1; echo
+          echo '=== GEOCODER ==='
+          curl -sS -D /tmp/h2 -o /tmp/b2 "https://geocode-maps.yandex.ru/1.x/?apikey=$KEY&geocode=Moscow&format=json"
+          head -1 /tmp/h2
+          head -c 500 /tmp/b2; echo
