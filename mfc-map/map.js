@@ -180,16 +180,49 @@ function routeCenter(points){
   return [points.reduce((a,p)=>a+p[0],0)/points.length,points.reduce((a,p)=>a+p[1],0)/points.length];
 }
 
-async function init(){try{statusEl.textContent="Загружаю Яндекс Карты…";await loadV21();await new Promise((resolve,reject)=>ymaps.ready(resolve,reject));map=new ymaps.Map("map",{center:[55.55,37.45],zoom:9,controls:["zoomControl"]},{suppressMapOpenBlock:true});setupRouteCard();Object.keys(ROUTE_META).forEach(t=>{
-  const pts=MFC.filter(r=>r[1]===t).map(r=>COORDS[r[0]]).filter(Boolean);
-  const hull=paddedHull(pts);
-  routeZones[t]=new ymaps.Polygon([hull],{hintContent:t+" · "+ROUTE_NAMES[t]},{fillColor:COLORS[t],fillOpacity:.085,strokeColor:COLORS[t],strokeOpacity:.55,strokeWidth:2,interactivityModel:"default#transparent"});
-  map.geoObjects.add(routeZones[t]);
-  const center=routeCenter(pts);
-  const labelLayout=ymaps.templateLayoutFactory.createClass('<div class="route-zone-label" style="border-color:'+COLORS[t]+';color:'+COLORS[t]+'">'+t+'</div>');
-  routeLabels[t]=new ymaps.Placemark(center,{}, {iconLayout:labelLayout,iconOffset:[-22,-16],zIndex:50});
-  map.geoObjects.add(routeLabels[t]);
-});const bounds=[];let count=0;for(const r of MFC){const [n,team,district,address]=r,p=COORDS[n];if(!p)continue;const item={n,team,district,address};const pm=new ymaps.Placemark(p,{iconContent:String(n)},{preset:"islands#circleIcon",iconColor:COLORS[team]});pm.events.add("click",()=>cardFor(item,p));groups[team].push(pm);map.geoObjects.add(pm);bounds.push(p);count++}if(bounds.length)map.setBounds(bounds,{checkZoomRange:true,zoomMargin:50});statusEl.textContent="На карте: "+count+" / 51 · 4 цветовые зоны обслуживания"}catch(e){console.error(e);statusEl.textContent="Ошибка загрузки Яндекс Карт: "+(e.message||e)}}
+async function init(){
+  try{
+    statusEl.textContent="Загружаю Яндекс Карты…";
+    await loadV21();
+    await new Promise((resolve,reject)=>ymaps.ready(resolve,reject));
+    map=new ymaps.Map("map",{center:[55.55,37.45],zoom:9,controls:["zoomControl"]},{suppressMapOpenBlock:true});
+
+    setupRouteCard();
+    setupTypeFilters();
+    setupInventorySummary();
+
+    Object.keys(ROUTE_META).forEach(t=>{
+      const pts=MFC.filter(r=>r[1]===t).map(r=>COORDS[r[0]]).filter(Boolean);
+      const hull=paddedHull(pts);
+      routeZones[t]=new ymaps.Polygon([hull],{hintContent:t+" · "+ROUTE_NAMES[t]},{fillColor:COLORS[t],fillOpacity:.085,strokeColor:COLORS[t],strokeOpacity:.55,strokeWidth:2,interactivityModel:"default#transparent"});
+      map.geoObjects.add(routeZones[t]);
+      const center=routeCenter(pts);
+      const labelLayout=ymaps.templateLayoutFactory.createClass('<div class="route-zone-label" style="border-color:'+COLORS[t]+';color:'+COLORS[t]+'">'+t+'</div>');
+      routeLabels[t]=new ymaps.Placemark(center,{}, {iconLayout:labelLayout,iconOffset:[-22,-16],zIndex:50});
+      map.geoObjects.add(routeLabels[t]);
+    });
+
+    const bounds=[];
+    for(const r of MFC){
+      const [n,team,district,address]=r,p=COORDS[n];
+      if(!p)continue;
+      const item={n,team,district,address},x=objectInfo(n),kind=objectTypeKey(n),badge=TYPE_BADGES[kind]||"О",low=x.confidence==="low";
+      const markerHtml='<div class="mfc-marker '+(low?"low":"")+'" style="background:'+COLORS[team]+'"><span>'+n+'</span><span class="kind" title="'+kind+'">'+badge+'</span></div>';
+      const markerLayout=ymaps.templateLayoutFactory.createClass(markerHtml);
+      const pm=new ymaps.Placemark(p,{hintContent:"№"+n+" · "+district+" · "+(x.type||"")},{iconLayout:markerLayout,iconOffset:[-16,-16],zIndex:100});
+      pm.events.add("click",()=>cardFor(item,p));
+      groups[team].push(pm);
+      markerRecords.push({pm,item,p,kind,visible:true});
+      map.geoObjects.add(pm);
+      bounds.push(p);
+    }
+    if(bounds.length)map.setBounds(bounds,{checkZoomRange:true,zoomMargin:50});
+    applyVisibility();
+  }catch(e){
+    console.error(e);
+    statusEl.textContent="Ошибка загрузки Яндекс Карт: "+(e.message||e);
+  }
+}
 init();
 // deploy build 8
 
