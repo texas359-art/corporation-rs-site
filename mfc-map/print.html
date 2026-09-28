@@ -2,71 +2,121 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>МФЦ — карта маршрутов для печати</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>МФЦ — схема обслуживания A3</title>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=ae1ad0d8-c1e7-4617-9b5f-782af5dfa35d&lang=ru_RU"></script>
 <style>
-:root{--m1:#e53935;--m2:#fb8c00;--m3:#2e7d32;--m4:#1e88e5}
-*{box-sizing:border-box}
-html,body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#111827;min-height:100%;min-height:100dvh}
-.toolbar{position:fixed;z-index:1000;top:12px;right:12px;display:flex;gap:8px}
-.toolbar button,.toolbar a{border:0;border-radius:10px;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;font-weight:800;font-size:13px;box-shadow:0 3px 12px #0002;cursor:pointer}
-.toolbar a{background:#fff;color:#111827}
-.sheet{width:420mm;height:297mm;margin:18px auto;background:#fff;box-shadow:0 12px 40px #0003;display:grid;grid-template-rows:20mm 1fr 72mm;overflow:hidden}
-.header{display:flex;align-items:center;justify-content:space-between;padding:0 10mm;border-bottom:1px solid #e5e7eb}
-.title{font-size:22px;font-weight:900;letter-spacing:-.2px}.subtitle{font-size:11px;color:#667085;margin-top:2px}
-.header-right{font-size:11px;color:#475467;text-align:right;line-height:1.5}
-.map-wrap{position:relative;min-height:0}
-#map{position:absolute;inset:0}
-.map-note{position:absolute;left:8mm;bottom:6mm;z-index:20;background:rgba(255,255,255,.93);border:1px solid #e5e7eb;border-radius:8px;padding:5px 8px;font-size:8.5px;color:#475467;box-shadow:0 2px 8px #0001}
-.footer{border-top:1px solid #d0d5dd;padding:5mm 8mm 4mm;display:grid;grid-template-columns:repeat(4,1fr);gap:5mm;overflow:hidden}
-.route-box{min-width:0;border:1px solid #e4e7ec;border-radius:8px;overflow:hidden}
-.route-head{padding:4px 7px;color:#fff;font-size:10.5px;font-weight:900;display:flex;justify-content:space-between;gap:6px}
-.route-head span:last-child{font-weight:700;opacity:.95}
-.route-list{padding:4px 7px 5px;font-size:7.4px;line-height:1.3;columns:1}
-.route-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:1.5px 0}
-.route-item b{font-weight:900}
-.route-zone-label{min-width:36px;height:26px;padding:0 8px;border:2px solid;border-radius:14px;background:rgba(255,255,255,.93);box-shadow:0 1px 5px #0002;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;pointer-events:none}
-.print-pin{width:25px;height:25px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 5px #0005;color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900}
+:root{--m1:#e53935;--m2:#fb8c00;--m3:#2e7d32;--m4:#1e88e5;--ink:#101828;--muted:#667085;--line:#d0d5dd}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+html,body{margin:0;min-height:100%;background:#e9edf2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+.toolbar{position:fixed;z-index:2000;top:12px;right:12px;display:flex;gap:8px}
+.toolbar a,.toolbar button{border:1px solid #d0d5dd;border-radius:11px;padding:10px 14px;background:#fff;color:#101828;text-decoration:none;font-size:13px;font-weight:800;box-shadow:0 4px 16px #0002;cursor:pointer}
+.toolbar button{background:#101828;color:#fff;border-color:#101828}
+.sheet{width:420mm;height:297mm;margin:18px auto;background:#fff;box-shadow:0 16px 48px #0003;display:grid;grid-template-rows:18mm 188mm 91mm;overflow:hidden}
+.header{display:flex;align-items:center;justify-content:space-between;padding:0 9mm;border-bottom:1px solid #dfe3e8;background:#fff}
+.title{font-size:21px;font-weight:900;letter-spacing:-.25px;line-height:1.05}
+.subtitle{font-size:9.5px;color:var(--muted);margin-top:2px}
+.header-meta{display:flex;gap:3mm;align-items:center}
+.meta-chip{border:1px solid #d0d5dd;border-radius:999px;padding:2.2mm 3.2mm;font-size:9px;font-weight:800;background:#fff;white-space:nowrap}
+.map-stage{position:relative;min-height:0;overflow:hidden;background:#edf2f5}
+#mapMain{position:absolute;inset:0}
+.inset{position:absolute;z-index:30;right:7mm;top:7mm;width:112mm;height:76mm;background:#fff;border:1px solid #98a2b3;border-radius:3mm;box-shadow:0 2mm 6mm #0002;overflow:hidden}
+.inset-title{position:absolute;z-index:35;left:2.5mm;top:2.5mm;background:rgba(255,255,255,.94);border:1px solid #d0d5dd;border-radius:999px;padding:1.5mm 2.4mm;font-size:8.5px;font-weight:900;box-shadow:0 1mm 3mm #0001}
+#mapCao{position:absolute;inset:0}
+.map-caption{position:absolute;z-index:25;left:7mm;bottom:6mm;max-width:142mm;background:rgba(255,255,255,.94);border:1px solid #e4e7ec;border-radius:2.2mm;padding:2.2mm 3mm;font-size:7.7px;line-height:1.25;color:#475467;box-shadow:0 1mm 3mm #0001}
+.legend{position:absolute;z-index:25;left:7mm;top:7mm;display:flex;gap:2.2mm;flex-wrap:wrap;max-width:170mm}
+.legend-item{display:flex;align-items:center;gap:1.4mm;background:rgba(255,255,255,.94);border:1px solid #e4e7ec;border-radius:999px;padding:1.4mm 2.4mm;font-size:8px;font-weight:800;box-shadow:0 1mm 3mm #0001}
+.dot{width:3mm;height:3mm;border-radius:50%}
+.footer{display:grid;grid-template-rows:1fr 10mm;border-top:1px solid #cfd4dc;background:#fff;overflow:hidden}
+.route-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;padding:4mm 6mm 2.5mm}
+.route-box{min-width:0;border:1px solid #dfe3e8;border-radius:2.3mm;overflow:hidden;background:#fff}
+.route-head{height:8.5mm;padding:0 2.5mm;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:2mm;font-size:9.2px;font-weight:900}
+.route-head small{font-size:7.7px;font-weight:800;opacity:.96;white-space:nowrap}
+.route-list{padding:2mm 2.5mm 2.2mm;font-size:7.15px;line-height:1.18}
+.route-item{display:grid;grid-template-columns:9mm 1fr;gap:1mm;align-items:start;margin:1.05mm 0}
+.route-num{font-weight:900;white-space:nowrap}
+.route-text{min-width:0}
+.route-district{font-weight:800}
+.special-strip{display:flex;align-items:center;padding:0 7mm;border-top:1px solid #e4e7ec;background:#f8fafc;font-size:7.7px;color:#475467;gap:5mm;white-space:nowrap}
+.special-strip b{color:#101828}
+.route-zone-label{min-width:34px;height:24px;padding:0 7px;border:2px solid;border-radius:13px;background:rgba(255,255,255,.94);box-shadow:0 1px 4px #0002;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;pointer-events:none}
+.print-pin{width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px #0005;color:#fff;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:900}
+.print-pin.cao{width:24px;height:24px;font-size:9px}
 @page{size:A3 landscape;margin:0}
 @media print{
   html,body{width:420mm;height:297mm;background:#fff}
   .toolbar{display:none!important}
-  .sheet{margin:0;box-shadow:none;width:420mm;height:297mm}
+  .sheet{width:420mm;height:297mm;margin:0;box-shadow:none}
 }
 @media screen and (max-width:1500px){
-  .sheet{width:calc(100vw - 24px);height:auto;aspect-ratio:420/297;margin:64px 12px 18px;grid-template-rows:6.75% 69% 24.25%}
-  .header{padding:0 2.5vw}.title{font-size:clamp(15px,1.7vw,22px)}.subtitle,.header-right{font-size:clamp(8px,.8vw,11px)}
-  .footer{padding:1.2vw 2vw 1vw;gap:1vw}.route-head{font-size:clamp(7px,.75vw,10.5px)}.route-list{font-size:clamp(5.5px,.55vw,7.4px)}
+  .sheet{width:calc(100vw - 24px);height:auto;aspect-ratio:420/297;margin:62px 12px 18px;grid-template-rows:6.06% 63.3% 30.64%}
+  .title{font-size:clamp(15px,1.55vw,21px)}.subtitle{font-size:clamp(7px,.72vw,9.5px)}
+  .header{padding:0 2.1vw}.meta-chip{font-size:clamp(7px,.7vw,9px);padding:.5vw .75vw}
+  .inset{right:1.7vw;top:1.7vw;width:26.6vw;height:18.1vw}.inset-title{font-size:clamp(6px,.65vw,8.5px)}
+  .legend{left:1.7vw;top:1.7vw;gap:.5vw}.legend-item{font-size:clamp(6px,.62vw,8px);padding:.35vw .55vw}
+  .map-caption{left:1.7vw;bottom:1.5vw;max-width:34vw;font-size:clamp(5.5px,.58vw,7.7px)}
+  .route-grid{gap:.7vw;padding:1vw 1.4vw .6vw}.route-head{height:2.05vw;font-size:clamp(6.5px,.69vw,9.2px)}.route-head small{font-size:clamp(5.5px,.58vw,7.7px)}
+  .route-list{font-size:clamp(5.3px,.54vw,7.15px);padding:.5vw .6vw}.route-item{grid-template-columns:2.1vw 1fr;margin:.24vw 0}
+  .special-strip{font-size:clamp(5.5px,.58vw,7.7px);padding:0 1.7vw}
 }
 @media screen and (max-width:680px){
   body{overflow:auto}
-  .toolbar{position:sticky;top:0;right:auto;padding:8px;background:rgba(238,241,245,.95);backdrop-filter:blur(8px);justify-content:flex-end}
-  .toolbar button,.toolbar a{padding:9px 11px;font-size:12px}
+  .toolbar{position:sticky;top:0;right:auto;padding:8px;background:rgba(233,237,242,.95);backdrop-filter:blur(8px);justify-content:flex-end}
+  .toolbar a,.toolbar button{padding:9px 11px;font-size:12px}
   .sheet{display:block;width:100%;height:auto;aspect-ratio:auto;margin:0;box-shadow:none}
-  .header{height:auto;min-height:70px;padding:12px 14px;gap:8px}.title{font-size:17px}.subtitle{font-size:10px}.header-right{font-size:9px}
-  .map-wrap{height:58dvh;min-height:420px}.map-note{left:8px;right:8px;bottom:8px;font-size:8px;padding:5px 7px}
-  .footer{display:grid;grid-template-columns:1fr;gap:8px;padding:10px;background:#f8fafc}
-  .route-head{font-size:11px;padding:6px 8px}.route-list{font-size:9.5px;line-height:1.35;padding:6px 8px}.route-item{white-space:normal}
-  .route-zone-label{min-width:30px;height:23px;font-size:11px}.print-pin{width:23px;height:23px;font-size:8px}
+  .header{min-height:72px;padding:12px 14px;gap:8px}.title{font-size:17px}.subtitle{font-size:10px}.header-meta{display:none}
+  .map-stage{height:61dvh;min-height:440px}.inset{width:42vw;height:31vw;right:8px;top:8px;border-radius:10px}.inset-title{font-size:8px;left:6px;top:6px;padding:4px 7px}
+  .legend{left:8px;top:8px;right:46vw;gap:5px}.legend-item{font-size:8px;padding:4px 7px}.dot{width:9px;height:9px}
+  .map-caption{left:8px;right:8px;bottom:8px;max-width:none;font-size:8px;padding:6px 8px}
+  .footer{display:block}.route-grid{grid-template-columns:1fr;gap:8px;padding:10px;background:#f8fafc}
+  .route-head{height:auto;min-height:34px;padding:7px 9px;font-size:11px}.route-head small{font-size:9px}
+  .route-list{font-size:10px;line-height:1.3;padding:7px 9px}.route-item{grid-template-columns:36px 1fr;margin:4px 0}
+  .special-strip{white-space:normal;min-height:46px;padding:8px 12px;font-size:9px;line-height:1.35;flex-wrap:wrap}
 }
 </style>
 </head>
 <body>
-<div class="toolbar"><a href="./?v=22">Обычная карта</a><button onclick="window.print()">Распечатать / PDF</button></div>
-<div class="sheet">
-  <div class="header">
-    <div><div class="title">Схема обслуживания МФЦ · 4 маршрута</div><div class="subtitle">51 объект · Москва и ТиНАО · точки пронумерованы по рабочему перечню</div></div>
-    <div class="header-right">Формат: A3, альбомная ориентация<br>Маршрут = постоянная зона ответственности</div>
-  </div>
-  <div class="map-wrap">
-    <div id="map"></div>
-    <div class="map-note">Цвет = маршрут. Номер точки соответствует перечню внизу. Полупрозрачная заливка показывает зону ответственности, а не границу административного района.</div>
-  </div>
-  <div class="footer" id="routeLists"></div>
-</div>
-<script src="./data.js?v=22"></script>
-<script src="./road-routes.js?v=22"></script>
-<script src="./print.js?v=2"></script>
+<div class="toolbar"><a href="./?v=23">Обычная карта</a><button onclick="window.print()">Распечатать / PDF</button></div>
+
+<main class="sheet">
+  <header class="header">
+    <div>
+      <div class="title">Схема обслуживания МФЦ · Москва и ТиНАО</div>
+      <div class="subtitle">51 объект · 4 постоянных маршрута · номера на карте соответствуют перечню объектов ниже</div>
+    </div>
+    <div class="header-meta">
+      <div class="meta-chip">A3 · альбомная</div>
+      <div class="meta-chip">4 маршрута</div>
+      <div class="meta-chip">51 объект</div>
+    </div>
+  </header>
+
+  <section class="map-stage">
+    <div id="mapMain"></div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="dot" style="background:var(--m1)"></span>М1 · юг / юго-восток</div>
+      <div class="legend-item"><span class="dot" style="background:var(--m2)"></span>М2 · ТиНАО + ЮЗАО</div>
+      <div class="legend-item"><span class="dot" style="background:var(--m3)"></span>М3 · внутренний юг</div>
+      <div class="legend-item"><span class="dot" style="background:var(--m4)"></span>М4 · ЦАО</div>
+    </div>
+
+    <div class="inset">
+      <div class="inset-title">ЦАО · увеличенный фрагмент</div>
+      <div id="mapCao"></div>
+    </div>
+
+    <div class="map-caption">Цвет показывает закреплённый маршрут. Полупрозрачные области — визуальные зоны ответственности, а не административные границы. Для ЦАО дан отдельный увеличенный фрагмент.</div>
+  </section>
+
+  <footer class="footer">
+    <div class="route-grid" id="routeLists"></div>
+    <div class="special-strip"><b>Особые условия:</b><span>№6 и №24 — капремонт</span><span>№35 — спецпропуск, обслуживание на выходных</span><span>№16 — точку дома 100 требуется подтвердить</span></div>
+  </footer>
+</main>
+
+<script src="./data.js?v=23"></script>
+<script src="./road-routes.js?v=23"></script>
+<script src="./print.js?v=3"></script>
 </body>
 </html>
