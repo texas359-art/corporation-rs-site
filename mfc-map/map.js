@@ -154,7 +154,10 @@ function setupRouteCard(){
     const t=sel.value,m=ROUTE_META[t],rr=(window.MFC_ROAD_ROUTES||{})[t],byNum=Object.fromEntries(MFC.map(r=>[r[0],r]));
     const order=(rr&&rr.order)||m.order;
     const seq=order.map((n,i)=>{const r=byNum[n];return (i+1)+". №"+n+" "+r[2]+" — "+r[3]}).join("<br>");
-    content.innerHTML="<b>"+t+" · "+m.title+"</b><br><span style='color:#667085'>Нагрузка: "+m.level+" · самый удалённый от центра зоны объект: №"+m.far+"</span><br><br><b>Основной коридор:</b> "+m.corridor+(rr?"<br><b>Маршрут по дорогам:</b> "+rr.distance_km+" км · ≈ "+rr.duration_min+" мин":"")+"<br><br><b>Ориентир порядка объезда:</b><br>"+seq+"<br><br><b>Особые условия:</b> "+m.special+"<br><span style='display:block;margin-top:6px;color:#667085'>Распределение рассчитано по дорожной матрице 51×51, реальному времени между адресами и проверке территориальной целостности.</span>";
+    const members=MFC.filter(r=>r[1]===t),counts={residential:0,retail:0,office:0,public:0,unknown:0};
+    members.forEach(r=>counts[objectTypeKey(r[0])]++);
+    const mix=[counts.residential?counts.residential+" жил.":null,counts.retail?counts.retail+" ТЦ/ТРЦ":null,counts.office?counts.office+" БЦ/офис":null,counts.public?counts.public+" общ.":null,counts.unknown?counts.unknown+" неизвестн.":null].filter(Boolean).join(" · ");
+    content.innerHTML="<b>"+t+" · "+m.title+"</b><br><span style='color:#667085'>Нагрузка: "+m.level+" · самый удалённый от центра зоны объект: №"+m.far+"</span><br><span style='color:#667085'>Состав объектов: "+mix+"</span><br><br><b>Основной коридор:</b> "+m.corridor+(rr?"<br><b>Маршрут по дорогам:</b> "+rr.distance_km+" км · ≈ "+rr.duration_min+" мин":"")+"<br><br><b>Ориентир порядка объезда:</b><br>"+seq+"<br><br><b>Особые условия:</b> "+m.special+"<br><span style='display:block;margin-top:6px;color:#667085'>Распределение рассчитано по дорожной матрице 51×51, реальному времени между адресами и проверке территориальной целостности.</span>";
   }
   sel.onchange=render;render();
 }
