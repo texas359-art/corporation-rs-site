@@ -29,7 +29,30 @@ const active={},groups={};Object.keys(COLORS).forEach(t=>{active[t]=true;groups[
 let map=null;const routeLines={};
 function button(team){const b=document.createElement("button");const c=MFC.filter(r=>r[1]===team).length;b.textContent=team+" · "+c;b.title=ROUTE_NAMES[team];b.style.background=COLORS[team];b.onclick=()=>{active[team]=!active[team];b.classList.toggle("off",!active[team]);groups[team].forEach(pm=>active[team]?map.geoObjects.add(pm):map.geoObjects.remove(pm));if(routeLines[team]){active[team]?map.geoObjects.add(routeLines[team]):map.geoObjects.remove(routeLines[team])}};filtersEl.appendChild(b)}
 Object.keys(COLORS).forEach(button);
-function cardFor(item,p){const w=WARN[item.n]||"Координата зафиксирована после проверки через Яндекс Геокодер.";cardBody.innerHTML='<h2>'+item.team+' · '+ROUTE_NAMES[item.team]+' · №'+item.n+' · '+item.district+'</h2><p><b>Адрес:</b> '+item.address+'</p><p><b>Координаты:</b> '+p[0].toFixed(6)+', '+p[1].toFixed(6)+'</p><div class="check '+(WARN[item.n]?"warn":"ok")+'">'+w+'</div>';card.classList.add("show")}
+function esc(v){return String(v??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function cardFor(item,p){
+  const w=WARN[item.n]||"Координата зафиксирована после проверки через Яндекс Геокодер.";
+  const x=(window.MFC_OBJECT_INFO||{})[item.n]||{};
+  const conf={high:["Подтверждено","ok"],medium:["Частично подтверждено","medium"],low:["Требует проверки","warn"]}[x.confidence]||["Нет оценки","warn"];
+  const row=(label,value)=>'<div class="objrow"><div class="objlabel">'+label+'</div><div class="objvalue">'+esc(value||"Нет подтверждённых данных")+'</div></div>';
+  cardBody.innerHTML=
+    '<h2>'+esc(item.team)+' · '+esc(ROUTE_NAMES[item.team])+' · №'+item.n+' · '+esc(item.district)+'</h2>'+
+    '<p><b>Адрес:</b> '+esc(item.address)+'</p>'+
+    '<div class="objgrid">'+
+      row("Тип объекта",x.type)+
+      row("Название / комплекс",x.name)+
+      row("Размещение МФЦ",x.placement)+
+      row("Здание",x.building)+
+      row("Парковка",x.parking)+
+      row("Доступ",x.access)+
+      row("Особенности",x.notes)+
+      row("Источники",x.sources)+
+    '</div>'+
+    '<div class="confidence '+conf[1]+'"><b>Достоверность:</b> '+conf[0]+'</div>'+
+    '<p class="coord"><b>Координаты:</b> '+p[0].toFixed(6)+', '+p[1].toFixed(6)+'</p>'+
+    '<div class="check '+(WARN[item.n]?"warn":"ok")+'">'+esc(w)+'</div>';
+  card.classList.add("show");
+}
 function loadV21(){return new Promise((resolve,reject)=>{if(window.ymaps)return resolve();const old=[...document.scripts].find(s=>s.src&&s.src.includes("api-maps.yandex.ru/v3/"));if(!old)return reject(new Error("Не найден загрузчик Яндекс Карт"));const sc=document.createElement("script");sc.src=old.src.replace("/v3/","/2.1/");sc.onload=resolve;sc.onerror=()=>reject(new Error("Не удалось загрузить Яндекс JS API 2.1"));document.head.appendChild(sc)})}
 
 function setupRouteCard(){
