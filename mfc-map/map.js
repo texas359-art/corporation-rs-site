@@ -28,8 +28,18 @@ document.getElementById("closeCard").onclick=()=>card.classList.remove("show");
 const active={},groups={},routeButtons={},routeZones={},routeLabels={},markerRecords=[];
 Object.keys(COLORS).forEach(t=>{active[t]=true;groups[t]=[]});
 let map=null,typeFilter="all";
-const mobileMQ=window.matchMedia("(max-width:680px)");
+const mobileMQ=window.matchMedia("(max-width:680px), (max-width:850px) and (max-height:950px)");
 function isMobile(){return mobileMQ.matches}
+function syncVisualViewport(){
+  const h=(window.visualViewport&&window.visualViewport.height)||window.innerHeight;
+  document.documentElement.style.setProperty("--app-vh",Math.max(240,h)+"px");
+  if(map)setTimeout(()=>map.container.fitToViewport(),20);
+}
+syncVisualViewport();
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize",syncVisualViewport);
+  window.visualViewport.addEventListener("scroll",syncVisualViewport);
+}
 function setPanelCollapsed(collapsed){
   if(!panelEl||!panelToggle)return;
   panelEl.classList.toggle("collapsed",collapsed);
@@ -47,6 +57,7 @@ if(mobileMQ.addEventListener)mobileMQ.addEventListener("change",e=>{
     setPanelCollapsed(false);
     document.getElementById("routeInfo")?.classList.remove("mobile-open");
   }
+  syncVisualViewport();
 });
 
 
@@ -129,7 +140,10 @@ function openObjectByNumber(n,zoom){
   }
   if(typeFilter!=="all")setTypeFilter("all");else applyVisibility();
   map.setCenter(p,zoom||(isMobile()?14:15));
-  if(isMobile())setPanelCollapsed(true);
+  if(isMobile()){
+    document.getElementById("routeInfo")?.classList.remove("mobile-open");
+    setPanelCollapsed(true);
+  }
   cardFor({n:num,team,district,address},p);
   statusEl.textContent="Объект №"+num+" · "+district;
 }
@@ -261,9 +275,14 @@ async function init(){
     let resizeTimer;
     window.addEventListener("resize",()=>{
       clearTimeout(resizeTimer);
+      syncVisualViewport();
       resizeTimer=setTimeout(()=>{if(map)map.container.fitToViewport()},120);
     });
-    window.addEventListener("orientationchange",()=>setTimeout(()=>{if(map)map.container.fitToViewport()},220));
+    window.addEventListener("orientationchange",()=>setTimeout(()=>{
+      syncVisualViewport();
+      if(map)map.container.fitToViewport();
+      if(isMobile())setPanelCollapsed(true);
+    },220));
   }catch(e){
     console.error(e);
     statusEl.textContent="Ошибка загрузки Яндекс Карт: "+(e.message||e);
