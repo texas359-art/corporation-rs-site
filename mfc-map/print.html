@@ -59,7 +59,7 @@ html,body{margin:0;min-height:100%;background:#e9edf2;font-family:-apple-system,
   .route-list{font-size:clamp(5.3px,.54vw,7.15px);padding:.5vw .6vw}.route-item{grid-template-columns:2.1vw 1fr;margin:.24vw 0}
   .special-strip{font-size:clamp(5.5px,.58vw,7.7px);padding:0 1.7vw}
 }
-@media screen and (max-width:680px){
+@media screen and (max-width:680px), screen and (max-width:850px) and (max-height:950px){
   body{overflow:auto}
   .toolbar{position:sticky;top:0;right:auto;padding:8px;background:rgba(233,237,242,.95);backdrop-filter:blur(8px);justify-content:flex-end}
   .toolbar a,.toolbar button{padding:9px 11px;font-size:12px}
@@ -76,7 +76,7 @@ html,body{margin:0;min-height:100%;background:#e9edf2;font-family:-apple-system,
 </style>
 </head>
 <body>
-<div class="toolbar"><a href="./?v=23">Обычная карта</a><button onclick="window.print()">Распечатать / PDF</button></div>
+<div class="toolbar"><a href="./?v=25">Обычная карта</a><button onclick="window.print()">Распечатать / PDF</button></div>
 
 <main class="sheet">
   <header class="header">
@@ -115,8 +115,8 @@ html,body{margin:0;min-height:100%;background:#e9edf2;font-family:-apple-system,
   </footer>
 </main>
 
-<script src="./data.js?v=23"></script>
-<script src="./road-routes.js?v=23"></script>
-<script src="./print.js?v=3"></script>
+<script src="./data.js?v=25"></script>
+<script src="./road-routes.js?v=25"></script>
+<script src="./print.js?v=4"></script>
 </body>
 </html>
