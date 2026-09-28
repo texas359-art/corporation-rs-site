@@ -11,6 +11,14 @@ const PRINT_COORDS={
 41:[55.612146,37.606999],42:[55.678204,37.654646],43:[55.622883,37.744118],44:[55.673443,37.615354],45:[55.634161,37.656928],
 46:[55.657855,37.593471],47:[55.644887,37.519413],48:[55.608816,37.535412],49:[55.619472,37.509289],50:[55.735515,37.635682],51:[55.732286,37.636958]
 };
+
+const ROUTE_PRINT_NAMES={
+  "М1":"Юг / юго-восток",
+  "М2":"ТиНАО + ЮЗАО",
+  "М3":"Внутренний юг",
+  "М4":"ЦАО + Замоскворечье"
+};
+
 function hull(points){
   const pts=points.map(p=>({x:p[1],y:p[0]})).sort((a,b)=>a.x-b.x||a.y-b.y);
   if(pts.length<3)return pts.map(p=>[p.y,p.x]);
@@ -18,46 +26,134 @@ function hull(points){
   const lo=[],hi=[];
   for(const p of pts){while(lo.length>=2&&cross(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}
   for(let i=pts.length-1;i>=0;i--){const p=pts[i];while(hi.length>=2&&cross(hi[hi.length-2],hi[hi.length-1],p)<=0)hi.pop();hi.push(p)}
-  lo.pop();hi.pop();return lo.concat(hi).map(p=>[p.y,p.x]);
+  lo.pop();hi.pop();
+  return lo.concat(hi).map(p=>[p.y,p.x]);
 }
-function padded(points,f=1.06){
+function padded(points,f=1.055){
   const h=hull(points),c=[points.reduce((a,p)=>a+p[0],0)/points.length,points.reduce((a,p)=>a+p[1],0)/points.length];
   return h.map(([lat,lon])=>[c[0]+(lat-c[0])*f,c[1]+(lon-c[1])*f]);
 }
-function center(points){return [points.reduce((a,p)=>a+p[0],0)/points.length,points.reduce((a,p)=>a+p[1],0)/points.length]}
-function shortAddr(a){return String(a).replace(/, Москва$/,"").replace("улица ","ул. ").replace("проспект","пр-т").replace("проезд","пр-д").replace("переулок","пер.").replace("строение","стр.").replace("корпус","к.")}
+function center(points){
+  return [points.reduce((a,p)=>a+p[0],0)/points.length,points.reduce((a,p)=>a+p[1],0)/points.length];
+}
+function shortAddr(a){
+  return String(a)
+    .replace(/, Москва$/,"")
+    .replace("улица ","ул. ")
+    .replace("проспект","пр-т")
+    .replace("проезд","пр-д")
+    .replace("переулок","пер.")
+    .replace("строение","стр.")
+    .replace("корпус","к.");
+}
+function markerLayout(team,n,extra=""){
+  return ymaps.templateLayoutFactory.createClass('<div class="print-pin '+extra+'" style="background:'+PRINT_COLORS[team]+'">'+n+'</div>');
+}
+function zoneLabelLayout(team){
+  return ymaps.templateLayoutFactory.createClass('<div class="route-zone-label" style="border-color:'+PRINT_COLORS[team]+';color:'+PRINT_COLORS[team]+'">'+team+'</div>');
+}
 
-ymaps.ready(()=>{
-  const map=new ymaps.Map("map",{center:[55.61,37.50],zoom:9,controls:[]},{suppressMapOpenBlock:true});
+function addZonesAndPins(map,teams,options={}){
   const bounds=[];
-  const routeLists=document.getElementById("routeLists");
-  Object.keys(PRINT_COLORS).forEach(team=>{
+  teams.forEach(team=>{
     const rows=MFC.filter(r=>r[1]===team);
     const pts=rows.map(r=>PRINT_COORDS[r[0]]).filter(Boolean);
-    const zone=new ymaps.Polygon([padded(pts)],{},{
-      fillColor:PRINT_COLORS[team],fillOpacity:.07,
-      strokeColor:PRINT_COLORS[team],strokeOpacity:.55,strokeWidth:2,
-      interactivityModel:"default#transparent"
+
+    if(options.zones!==false){
+      map.geoObjects.add(new ymaps.Polygon([padded(pts)],{},{
+        fillColor:PRINT_COLORS[team],
+        fillOpacity:options.fillOpacity ?? .055,
+        strokeColor:PRINT_COLORS[team],
+        strokeOpacity:options.strokeOpacity ?? .50,
+        strokeWidth:options.strokeWidth ?? 2,
+        interactivityModel:"default#transparent"
+      }));
+    }
+
+    if(options.zoneLabels!==false){
+      const c=center(pts);
+      map.geoObjects.add(new ymaps.Placemark(c,{},{
+        iconLayout:zoneLabelLayout(team),
+        iconOffset:[-17,-12],
+        zIndex:60
+      }));
+    }
+
+    rows.forEach(([n,,district])=>{
+      const p=PRINT_COORDS[n]; if(!p)return;
+      bounds.push(p);
+      map.geoObjects.add(new ymaps.Placemark(p,{hintContent:"№"+n+" · "+district},{
+        iconLayout:markerLayout(team,n,options.cao?"cao":""),
+        iconOffset:[options.cao?-12:-11,options.cao?-12:-11],
+        zIndex:100
+      }));
     });
-    map.geoObjects.add(zone);
-
-    const labelLayout=ymaps.templateLayoutFactory.createClass('<div class="route-zone-label" style="border-color:'+PRINT_COLORS[team]+';color:'+PRINT_COLORS[team]+'">'+team+'</div>');
-    map.geoObjects.add(new ymaps.Placemark(center(pts),{}, {iconLayout:labelLayout,iconOffset:[-18,-13],zIndex:40}));
-
-    rows.forEach(([n,,district,address])=>{
-      const p=PRINT_COORDS[n]; if(!p)return; bounds.push(p);
-      const layout=ymaps.templateLayoutFactory.createClass('<div class="print-pin" style="background:'+PRINT_COLORS[team]+'">'+n+'</div>');
-      map.geoObjects.add(new ymaps.Placemark(p,{hintContent:"№"+n+" · "+district},{iconLayout:layout,iconOffset:[-12,-12],zIndex:100}));
-    });
-
-    const rr=(window.MFC_ROAD_ROUTES||{})[team]||{};
-    const box=document.createElement("section");box.className="route-box";
-    const head=document.createElement("div");head.className="route-head";head.style.background=PRINT_COLORS[team];
-    head.innerHTML='<span>'+team+' · '+rows.length+' объектов</span><span>'+(rr.distance_km?rr.distance_km+' км · ~'+Math.round(rr.duration_min)+' мин':'')+'</span>';
-    const list=document.createElement("div");list.className="route-list";
-    list.innerHTML=rows.sort((a,b)=>a[0]-b[0]).map(([n,,district,address])=>'<div class="route-item"><b>№'+n+'</b> '+district+' — '+shortAddr(address)+'</div>').join("");
-    box.appendChild(head);box.appendChild(list);routeLists.appendChild(box);
   });
-  if(bounds.length)map.setBounds(bounds,{checkZoomRange:true,zoomMargin:[28,30,25,30]});
-  setTimeout(()=>map.container.fitToViewport(),250);
+  return bounds;
+}
+
+function renderLists(){
+  const routeLists=document.getElementById("routeLists");
+  routeLists.innerHTML="";
+  Object.keys(PRINT_COLORS).forEach(team=>{
+    const rows=MFC.filter(r=>r[1]===team).sort((a,b)=>a[0]-b[0]);
+    const rr=(window.MFC_ROAD_ROUTES||{})[team]||{};
+
+    const box=document.createElement("section");
+    box.className="route-box";
+
+    const head=document.createElement("div");
+    head.className="route-head";
+    head.style.background=PRINT_COLORS[team];
+    head.innerHTML='<span>'+team+' · '+ROUTE_PRINT_NAMES[team]+'</span><small>'+rows.length+' объектов'+(rr.distance_km?' · '+rr.distance_km+' км':'')+'</small>';
+
+    const list=document.createElement("div");
+    list.className="route-list";
+    list.innerHTML=rows.map(([n,,district,address])=>
+      '<div class="route-item">'+
+        '<div class="route-num">№'+n+'</div>'+
+        '<div class="route-text"><span class="route-district">'+district+'</span> — '+shortAddr(address)+'</div>'+
+      '</div>'
+    ).join("");
+
+    box.appendChild(head);
+    box.appendChild(list);
+    routeLists.appendChild(box);
+  });
+}
+
+ymaps.ready(()=>{
+  renderLists();
+
+  const mainMap=new ymaps.Map("mapMain",{center:[55.61,37.48],zoom:9,controls:[]},{
+    suppressMapOpenBlock:true,
+    yandexMapDisablePoiInteractivity:true
+  });
+  const mainBounds=addZonesAndPins(mainMap,["М1","М2","М3","М4"],{
+    fillOpacity:.05,strokeOpacity:.48,strokeWidth:2
+  });
+  if(mainBounds.length){
+    mainMap.setBounds(mainBounds,{checkZoomRange:true,zoomMargin:[30,150,28,32]});
+  }
+
+  const caoMap=new ymaps.Map("mapCao",{center:[55.758,37.615],zoom:12,controls:[]},{
+    suppressMapOpenBlock:true,
+    yandexMapDisablePoiInteractivity:true
+  });
+  const caoBounds=addZonesAndPins(caoMap,["М4"],{
+    zones:false,
+    zoneLabels:false,
+    cao:true
+  });
+  if(caoBounds.length){
+    caoMap.setBounds(caoBounds,{checkZoomRange:true,zoomMargin:[28,18,18,18]});
+  }
+
+  const fit=()=>{
+    mainMap.container.fitToViewport();
+    caoMap.container.fitToViewport();
+  };
+  setTimeout(fit,300);
+  window.addEventListener("resize",()=>setTimeout(fit,80));
+  window.addEventListener("beforeprint",()=>setTimeout(fit,80));
 });
