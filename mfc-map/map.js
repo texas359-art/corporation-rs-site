@@ -23,12 +23,99 @@ const WARN={
 20:"Яндекс подтвердил Хавскую, 26. Фактически адрес относится к Даниловскому району; в исходном списке указан Донской.",
 51:"Яндекс подтвердил дом 30, но не выделил строение 1 отдельно."
 };
-const statusEl=document.getElementById("status"),filtersEl=document.getElementById("filters"),card=document.getElementById("card"),cardBody=document.getElementById("cardBody");
+const statusEl=document.getElementById("status"),filtersEl=document.getElementById("filters"),typeFiltersEl=document.getElementById("typeFilters"),inventorySummaryEl=document.getElementById("inventorySummary"),searchInput=document.getElementById("searchInput"),searchBtn=document.getElementById("searchBtn"),card=document.getElementById("card"),cardBody=document.getElementById("cardBody");
 document.getElementById("closeCard").onclick=()=>card.classList.remove("show");
-const active={},groups={};Object.keys(COLORS).forEach(t=>{active[t]=true;groups[t]=[]});
-let map=null;const routeZones={},routeLabels={};
-function button(team){const b=document.createElement("button");const c=MFC.filter(r=>r[1]===team).length;b.textContent=team+" · "+c;b.title=ROUTE_NAMES[team];b.style.background=COLORS[team];b.onclick=()=>{active[team]=!active[team];b.classList.toggle("off",!active[team]);groups[team].forEach(pm=>active[team]?map.geoObjects.add(pm):map.geoObjects.remove(pm));if(routeZones[team]){active[team]?map.geoObjects.add(routeZones[team]):map.geoObjects.remove(routeZones[team])}if(routeLabels[team]){active[team]?map.geoObjects.add(routeLabels[team]):map.geoObjects.remove(routeLabels[team])}};filtersEl.appendChild(b)}
+const active={},groups={},routeButtons={},routeZones={},routeLabels={},markerRecords=[];
+Object.keys(COLORS).forEach(t=>{active[t]=true;groups[t]=[]});
+let map=null,typeFilter="all";
+
+const TYPE_FILTERS=[
+  ["all","Все"],
+  ["residential","🏠 Жилые"],
+  ["retail","🛍 ТЦ/ТРЦ"],
+  ["office","🏢 БЦ/офис"],
+  ["public","◼ Общественные"],
+  ["unknown","? Неизвестные"],
+  ["special","⚠ Особые"]
+];
+const TYPE_BADGES={residential:"Ж",retail:"Т",office:"Б",public:"О",unknown:"?",special:"!"};
+
+function objectInfo(n){return (window.MFC_OBJECT_INFO||{})[n]||{}}
+function objectTypeKey(n){
+  const x=objectInfo(n),t=String(x.type||"").toLowerCase();
+  if(/не определ/.test(t))return "unknown";
+  if(/торгов|трц|тц/.test(t))return "retail";
+  if(/жил/.test(t))return "residential";
+  if(/бизнес|офис|административ|государствен/.test(t))return "office";
+  return "public";
+}
+function isSpecialObject(n){
+  const x=objectInfo(n),txt=((x.notes||"")+" "+(x.access||"")+" "+(x.special||"")).toLowerCase();
+  return !!WARN[n]||/капремонт|спецпропуск|спец.?пропуск|режимн|пропуск/.test(txt);
+}
+function typeMatches(rec){
+  if(typeFilter==="all")return true;
+  if(typeFilter==="special")return isSpecialObject(rec.item.n);
+  return rec.kind===typeFilter;
+}
+function setMarkerVisible(rec,want){
+  if(want&&!rec.visible){map.geoObjects.add(rec.pm);rec.visible=true}
+  else if(!want&&rec.visible){map.geoObjects.remove(rec.pm);rec.visible=false}
+}
+function applyVisibility(){
+  if(!map)return;
+  let shown=0;
+  markerRecords.forEach(rec=>{const want=active[rec.item.team]&&typeMatches(rec);setMarkerVisible(rec,want);if(want)shown++});
+  statusEl.textContent="Показано: "+shown+" / 51 · 4 зоны обслуживания";
+}
+function button(team){
+  const b=document.createElement("button"),c=MFC.filter(r=>r[1]===team).length;
+  b.textContent=team+" · "+c;b.title=ROUTE_NAMES[team];b.style.background=COLORS[team];routeButtons[team]=b;
+  b.onclick=()=>{
+    active[team]=!active[team];b.classList.toggle("off",!active[team]);
+    if(routeZones[team])active[team]?map.geoObjects.add(routeZones[team]):map.geoObjects.remove(routeZones[team]);
+    if(routeLabels[team])active[team]?map.geoObjects.add(routeLabels[team]):map.geoObjects.remove(routeLabels[team]);
+    applyVisibility();
+  };
+  filtersEl.appendChild(b);
+}
 Object.keys(COLORS).forEach(button);
+
+function setTypeFilter(id){
+  typeFilter=id;
+  [...typeFiltersEl.querySelectorAll("button")].forEach(b=>b.classList.toggle("on",b.dataset.type===id));
+  applyVisibility();
+}
+function setupTypeFilters(){
+  TYPE_FILTERS.forEach(([id,label])=>{const b=document.createElement("button");b.dataset.type=id;b.textContent=label;b.onclick=()=>setTypeFilter(id);typeFiltersEl.appendChild(b)});
+  setTypeFilter("all");
+}
+function setupInventorySummary(){
+  const vals=MFC.map(r=>objectInfo(r[0]).confidence||"low");
+  const high=vals.filter(v=>v==="high").length,medium=vals.filter(v=>v==="medium").length,low=vals.filter(v=>v==="low").length;
+  inventorySummaryEl.textContent="Инвентаризация: "+high+" подтверждено · "+medium+" частично · "+low+" проверить";
+}
+function searchObject(){
+  const q=String(searchInput.value||"").trim().toLowerCase();
+  if(!q)return;
+  let candidates=MFC.map(r=>{
+    const [n,team,district,address]=r,x=objectInfo(n);
+    const hay=[n,district,address,x.name,x.type,x.placement].join(" ").toLowerCase();
+    let score=hay.includes(q)?1:0;
+    if(String(n)===q)score=100;
+    else if(String(address).toLowerCase().startsWith(q)||String(district).toLowerCase().startsWith(q))score=10;
+    return {r,x,score};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  if(!candidates.length){statusEl.textContent="Ничего не найдено по запросу «"+searchInput.value+"»";return}
+  const [n,team,district,address]=candidates[0].r,p=COORDS[n];
+  if(!active[team]){active[team]=true;routeButtons[team]?.classList.remove("off");if(routeZones[team])map.geoObjects.add(routeZones[team]);if(routeLabels[team])map.geoObjects.add(routeLabels[team])}
+  if(typeFilter!=="all")setTypeFilter("all");else applyVisibility();
+  map.setCenter(p,15);
+  cardFor({n,team,district,address},p);
+  statusEl.textContent="Найдено: №"+n+" · "+district;
+}
+searchBtn.onclick=searchObject;
+searchInput.addEventListener("keydown",e=>{if(e.key==="Enter")searchObject()});
 function esc(v){return String(v??"—").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function cardFor(item,p){
   const w=WARN[item.n]||"Координата зафиксирована после проверки через Яндекс Геокодер.";
