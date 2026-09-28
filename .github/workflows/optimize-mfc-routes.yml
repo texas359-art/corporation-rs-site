@@ -148,3 +148,5 @@ jobs:
                   print("NAMES|%d|%s|%s"%(rank,t,"; ".join(f"{n}:{bynum[n][2]}" for n in mem)))
           PY
           python3 /tmp/opt.py
+
+# trigger continuity optimization
