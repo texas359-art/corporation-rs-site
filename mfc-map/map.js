@@ -23,11 +23,32 @@ const WARN={
 20:"Яндекс подтвердил Хавскую, 26. Фактически адрес относится к Даниловскому району; в исходном списке указан Донской.",
 51:"Яндекс подтвердил дом 30, но не выделил строение 1 отдельно."
 };
-const statusEl=document.getElementById("status"),filtersEl=document.getElementById("filters"),typeFiltersEl=document.getElementById("typeFilters"),inventorySummaryEl=document.getElementById("inventorySummary"),searchInput=document.getElementById("searchInput"),searchBtn=document.getElementById("searchBtn"),card=document.getElementById("card"),cardBody=document.getElementById("cardBody");
+const statusEl=document.getElementById("status"),filtersEl=document.getElementById("filters"),typeFiltersEl=document.getElementById("typeFilters"),inventorySummaryEl=document.getElementById("inventorySummary"),searchInput=document.getElementById("searchInput"),searchBtn=document.getElementById("searchBtn"),panelEl=document.querySelector(".panel"),panelToggle=document.getElementById("panelToggle"),card=document.getElementById("card"),cardBody=document.getElementById("cardBody");
 document.getElementById("closeCard").onclick=()=>card.classList.remove("show");
 const active={},groups={},routeButtons={},routeZones={},routeLabels={},markerRecords=[];
 Object.keys(COLORS).forEach(t=>{active[t]=true;groups[t]=[]});
 let map=null,typeFilter="all";
+const mobileMQ=window.matchMedia("(max-width:680px)");
+function isMobile(){return mobileMQ.matches}
+function setPanelCollapsed(collapsed){
+  if(!panelEl||!panelToggle)return;
+  panelEl.classList.toggle("collapsed",collapsed);
+  panelToggle.textContent=collapsed?"⌄":"⌃";
+  panelToggle.setAttribute("aria-label",collapsed?"Развернуть панель":"Свернуть панель");
+  setTimeout(()=>{if(map)map.container.fitToViewport()},80);
+}
+if(panelToggle){
+  panelToggle.onclick=()=>setPanelCollapsed(!panelEl.classList.contains("collapsed"));
+  if(isMobile())setPanelCollapsed(true);
+}
+if(mobileMQ.addEventListener)mobileMQ.addEventListener("change",e=>{
+  if(e.matches)setPanelCollapsed(true);
+  else{
+    setPanelCollapsed(false);
+    document.getElementById("routeInfo")?.classList.remove("mobile-open");
+  }
+});
+
 
 const TYPE_FILTERS=[
   ["all","Все"],
@@ -110,7 +131,8 @@ function searchObject(){
   const [n,team,district,address]=candidates[0].r,p=COORDS[n];
   if(!active[team]){active[team]=true;routeButtons[team]?.classList.remove("off");if(routeZones[team])map.geoObjects.add(routeZones[team]);if(routeLabels[team])map.geoObjects.add(routeLabels[team])}
   if(typeFilter!=="all")setTypeFilter("all");else applyVisibility();
-  map.setCenter(p,15);
+  map.setCenter(p,isMobile()?14:15);
+  if(isMobile())setPanelCollapsed(true);
   cardFor({n,team,district,address},p);
   statusEl.textContent="Найдено: №"+n+" · "+district;
 }
@@ -148,8 +170,14 @@ function setupRouteCard(){
   const box=document.createElement("div");box.id="routeInfo";box.style.cssText="margin-top:10px;padding-top:10px;border-top:1px solid #eaecf0;font-size:12px;color:#344054";
   const sel=document.createElement("select");sel.id="routeSelect";sel.style.cssText="width:100%;padding:8px 10px;border:1px solid #d0d5dd;border-radius:10px;background:#fff;font-weight:700";
   Object.keys(ROUTE_META).forEach(t=>{const o=document.createElement("option");o.value=t;o.textContent=t+" · "+ROUTE_META[t].title+" · "+MFC.filter(r=>r[1]===t).length+" объектов";sel.appendChild(o)});
+  const toggle=document.createElement("button");toggle.type="button";toggle.className="route-details-toggle";toggle.textContent="Показать подробности маршрута";
   const content=document.createElement("div");content.id="routeInfoBody";content.style.marginTop="8px";
-  box.appendChild(sel);box.appendChild(content);panel.appendChild(box);
+  toggle.onclick=()=>{
+    const open=box.classList.toggle("mobile-open");
+    toggle.textContent=open?"Скрыть подробности маршрута":"Показать подробности маршрута";
+    setTimeout(()=>{if(map)map.container.fitToViewport()},50);
+  };
+  box.appendChild(sel);box.appendChild(toggle);box.appendChild(content);panel.appendChild(box);
   function render(){
     const t=sel.value,m=ROUTE_META[t],rr=(window.MFC_ROAD_ROUTES||{})[t],byNum=Object.fromEntries(MFC.map(r=>[r[0],r]));
     const order=(rr&&rr.order)||m.order;
@@ -161,7 +189,6 @@ function setupRouteCard(){
   }
   sel.onchange=render;render();
 }
-
 
 function convexHull(points){
   const pts=points.map(p=>({lat:p[0],lon:p[1]})).sort((a,b)=>a.lon-b.lon||a.lat-b.lat);
@@ -188,7 +215,7 @@ async function init(){
     statusEl.textContent="Загружаю Яндекс Карты…";
     await loadV21();
     await new Promise((resolve,reject)=>ymaps.ready(resolve,reject));
-    map=new ymaps.Map("map",{center:[55.55,37.45],zoom:9,controls:["zoomControl"]},{suppressMapOpenBlock:true});
+    map=new ymaps.Map("map",{center:[55.55,37.45],zoom:9,controls:isMobile()?[]:["zoomControl"]},{suppressMapOpenBlock:true});
 
     setupRouteCard();
     setupTypeFilters();
@@ -219,8 +246,14 @@ async function init(){
       map.geoObjects.add(pm);
       bounds.push(p);
     }
-    if(bounds.length)map.setBounds(bounds,{checkZoomRange:true,zoomMargin:50});
+    if(bounds.length)map.setBounds(bounds,{checkZoomRange:true,zoomMargin:isMobile()?[125,18,24,18]:[24,24,24,470]});
     applyVisibility();
+    let resizeTimer;
+    window.addEventListener("resize",()=>{
+      clearTimeout(resizeTimer);
+      resizeTimer=setTimeout(()=>{if(map)map.container.fitToViewport()},120);
+    });
+    window.addEventListener("orientationchange",()=>setTimeout(()=>{if(map)map.container.fitToViewport()},220));
   }catch(e){
     console.error(e);
     statusEl.textContent="Ошибка загрузки Яндекс Карт: "+(e.message||e);
