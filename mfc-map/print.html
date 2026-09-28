@@ -8,7 +8,7 @@
 <style>
 :root{--m1:#e53935;--m2:#fb8c00;--m3:#2e7d32;--m4:#1e88e5}
 *{box-sizing:border-box}
-html,body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#111827}
+html,body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#111827;min-height:100%;min-height:100dvh}
 .toolbar{position:fixed;z-index:1000;top:12px;right:12px;display:flex;gap:8px}
 .toolbar button,.toolbar a{border:0;border-radius:10px;padding:10px 14px;background:#111827;color:#fff;text-decoration:none;font-weight:800;font-size:13px;box-shadow:0 3px 12px #0002;cursor:pointer}
 .toolbar a{background:#fff;color:#111827}
@@ -34,13 +34,26 @@ html,body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFo
   .toolbar{display:none!important}
   .sheet{margin:0;box-shadow:none;width:420mm;height:297mm}
 }
-@media(max-width:1200px){
-  .sheet{transform-origin:top left}
+@media screen and (max-width:1500px){
+  .sheet{width:calc(100vw - 24px);height:auto;aspect-ratio:420/297;margin:64px 12px 18px;grid-template-rows:6.75% 69% 24.25%}
+  .header{padding:0 2.5vw}.title{font-size:clamp(15px,1.7vw,22px)}.subtitle,.header-right{font-size:clamp(8px,.8vw,11px)}
+  .footer{padding:1.2vw 2vw 1vw;gap:1vw}.route-head{font-size:clamp(7px,.75vw,10.5px)}.route-list{font-size:clamp(5.5px,.55vw,7.4px)}
+}
+@media screen and (max-width:680px){
+  body{overflow:auto}
+  .toolbar{position:sticky;top:0;right:auto;padding:8px;background:rgba(238,241,245,.95);backdrop-filter:blur(8px);justify-content:flex-end}
+  .toolbar button,.toolbar a{padding:9px 11px;font-size:12px}
+  .sheet{display:block;width:100%;height:auto;aspect-ratio:auto;margin:0;box-shadow:none}
+  .header{height:auto;min-height:70px;padding:12px 14px;gap:8px}.title{font-size:17px}.subtitle{font-size:10px}.header-right{font-size:9px}
+  .map-wrap{height:58dvh;min-height:420px}.map-note{left:8px;right:8px;bottom:8px;font-size:8px;padding:5px 7px}
+  .footer{display:grid;grid-template-columns:1fr;gap:8px;padding:10px;background:#f8fafc}
+  .route-head{font-size:11px;padding:6px 8px}.route-list{font-size:9.5px;line-height:1.35;padding:6px 8px}.route-item{white-space:normal}
+  .route-zone-label{min-width:30px;height:23px;font-size:11px}.print-pin{width:23px;height:23px;font-size:8px}
 }
 </style>
 </head>
 <body>
-<div class="toolbar"><a href="./?v=21">Обычная карта</a><button onclick="window.print()">Распечатать / PDF</button></div>
+<div class="toolbar"><a href="./?v=22">Обычная карта</a><button onclick="window.print()">Распечатать / PDF</button></div>
 <div class="sheet">
   <div class="header">
     <div><div class="title">Схема обслуживания МФЦ · 4 маршрута</div><div class="subtitle">51 объект · Москва и ТиНАО · точки пронумерованы по рабочему перечню</div></div>
@@ -52,8 +65,8 @@ html,body{margin:0;background:#eef1f5;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <div class="footer" id="routeLists"></div>
 </div>
-<script src="./data.js?v=21"></script>
-<script src="./road-routes.js?v=21"></script>
-<script src="./print.js?v=1"></script>
+<script src="./data.js?v=22"></script>
+<script src="./road-routes.js?v=22"></script>
+<script src="./print.js?v=2"></script>
 </body>
 </html>
