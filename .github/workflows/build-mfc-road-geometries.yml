@@ -1,0 +1,47 @@
+name: Build MFC Road Geometries
+on:
+  push:
+    paths:
+      - '.github/workflows/build-mfc-road-geometries.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build actual driving geometries
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re,json,urllib.request,time
+          p="mfc-map/map.js"
+          m=open(p,encoding="utf-8").read()
+          block=re.search(r'const COORDS=\{(.*?)\};',m,re.S).group(1)
+          coords={int(n):(float(lat),float(lon)) for n,lat,lon in re.findall(r'(\d+):\[([0-9.]+),([0-9.]+)\]',block)}
+          routes={
+            "М1":[28,22,23,27,21,25,46,44,4,42,45,5,43,3],
+            "М2":[14,19,17,49,48,47,26,24,18,16],
+            "М3":[11,15,12,13,41,10,9,6,2,1,8,7],
+            "М4":[20,33,50,51,30,39,38,36,35,34,29,37,32,31,40],
+          }
+          out={}
+          for team,order in routes.items():
+              q=";".join(f"{coords[n][1]},{coords[n][0]}" for n in order)
+              url="https://router.project-osrm.org/route/v1/driving/"+q+"?overview=full&geometries=geojson&steps=false"
+              req=urllib.request.Request(url,headers={"User-Agent":"MFC-road-geometry-builder/1.0"})
+              with urllib.request.urlopen(req,timeout=120) as r:data=json.load(r)
+              if data.get("code")!="Ok": raise RuntimeError(data)
+              route=data["routes"][0]
+              # OSRM GeoJSON is [lon,lat], Yandex wants [lat,lon].
+              geom=[[round(y,6),round(x,6)] for x,y in route["geometry"]["coordinates"]]
+              out[team]={"order":order,"geometry":geom,"distance_km":round(route["distance"]/1000,1),"duration_min":round(route["duration"]/60,1)}
+              time.sleep(1)
+          js="window.MFC_ROAD_ROUTES="+json.dumps(out,ensure_ascii=False,separators=(",",":"))+";\n"
+          open("mfc-map/road-routes.js","w",encoding="utf-8").write(js)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mfc-map/road-routes.js
+          git diff --cached --quiet || git commit -m "Generate actual driving geometry for MFC routes"
+          git push
