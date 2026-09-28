@@ -116,6 +116,23 @@ function setupInventorySummary(){
   const high=vals.filter(v=>v==="high").length,medium=vals.filter(v=>v==="medium").length,low=vals.filter(v=>v==="low").length;
   inventorySummaryEl.textContent="Инвентаризация: "+high+" подтверждено · "+medium+" частично · "+low+" проверить";
 }
+function openObjectByNumber(n,zoom){
+  const r=MFC.find(x=>x[0]===Number(n));
+  if(!r)return;
+  const [num,team,district,address]=r,p=COORDS[num];
+  if(!p)return;
+  if(!active[team]){
+    active[team]=true;
+    routeButtons[team]?.classList.remove("off");
+    if(routeZones[team])map.geoObjects.add(routeZones[team]);
+    if(routeLabels[team])map.geoObjects.add(routeLabels[team]);
+  }
+  if(typeFilter!=="all")setTypeFilter("all");else applyVisibility();
+  map.setCenter(p,zoom||(isMobile()?14:15));
+  if(isMobile())setPanelCollapsed(true);
+  cardFor({n:num,team,district,address},p);
+  statusEl.textContent="Объект №"+num+" · "+district;
+}
 function searchObject(){
   const q=String(searchInput.value||"").trim().toLowerCase();
   if(!q)return;
@@ -128,13 +145,7 @@ function searchObject(){
     return {r,x,score};
   }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
   if(!candidates.length){statusEl.textContent="Ничего не найдено по запросу «"+searchInput.value+"»";return}
-  const [n,team,district,address]=candidates[0].r,p=COORDS[n];
-  if(!active[team]){active[team]=true;routeButtons[team]?.classList.remove("off");if(routeZones[team])map.geoObjects.add(routeZones[team]);if(routeLabels[team])map.geoObjects.add(routeLabels[team])}
-  if(typeFilter!=="all")setTypeFilter("all");else applyVisibility();
-  map.setCenter(p,isMobile()?14:15);
-  if(isMobile())setPanelCollapsed(true);
-  cardFor({n,team,district,address},p);
-  statusEl.textContent="Найдено: №"+n+" · "+district;
+  openObjectByNumber(candidates[0].r[0]);
 }
 searchBtn.onclick=searchObject;
 searchInput.addEventListener("keydown",e=>{if(e.key==="Enter")searchObject()});
@@ -181,11 +192,12 @@ function setupRouteCard(){
   function render(){
     const t=sel.value,m=ROUTE_META[t],rr=(window.MFC_ROAD_ROUTES||{})[t],byNum=Object.fromEntries(MFC.map(r=>[r[0],r]));
     const order=(rr&&rr.order)||m.order;
-    const seq=order.map((n,i)=>{const r=byNum[n];return (i+1)+". №"+n+" "+r[2]+" — "+r[3]}).join("<br>");
+    const seq=order.map((n,i)=>{const r=byNum[n];return '<button class="route-address-link" data-n="'+n+'">'+(i+1)+'. №'+n+' '+esc(r[2])+' — '+esc(r[3])+'</button>'}).join("");
     const members=MFC.filter(r=>r[1]===t),counts={residential:0,retail:0,office:0,public:0,unknown:0};
     members.forEach(r=>counts[objectTypeKey(r[0])]++);
     const mix=[counts.residential?counts.residential+" жил.":null,counts.retail?counts.retail+" ТЦ/ТРЦ":null,counts.office?counts.office+" БЦ/офис":null,counts.public?counts.public+" общ.":null,counts.unknown?counts.unknown+" неизвестн.":null].filter(Boolean).join(" · ");
-    content.innerHTML="<b>"+t+" · "+m.title+"</b><br><span style='color:#667085'>Нагрузка: "+m.level+" · самый удалённый от центра зоны объект: №"+m.far+"</span><br><span style='color:#667085'>Состав объектов: "+mix+"</span><br><br><b>Основной коридор:</b> "+m.corridor+(rr?"<br><b>Маршрут по дорогам:</b> "+rr.distance_km+" км · ≈ "+rr.duration_min+" мин":"")+"<br><br><b>Ориентир порядка объезда:</b><br>"+seq+"<br><br><b>Особые условия:</b> "+m.special+"<br><span style='display:block;margin-top:6px;color:#667085'>Распределение рассчитано по дорожной матрице 51×51, реальному времени между адресами и проверке территориальной целостности.</span>";
+    content.innerHTML="<b>"+t+" · "+m.title+"</b><br><span style='color:#667085'>Нагрузка: "+m.level+" · самый удалённый от центра зоны объект: №"+m.far+"</span><br><span style='color:#667085'>Состав объектов: "+mix+"</span><br><br><b>Основной коридор:</b> "+m.corridor+(rr?"<br><b>Маршрут по дорогам:</b> "+rr.distance_km+" км · ≈ "+rr.duration_min+" мин":"")+"<br><br><b>Ориентир порядка объезда:</b><div class='route-addresses'>"+seq+"</div><br><b>Особые условия:</b> "+m.special+"<br><span style='display:block;margin-top:6px;color:#667085'>Нажми на любой адрес выше — откроется карточка объекта.</span>";
+    content.querySelectorAll(".route-address-link").forEach(btn=>btn.onclick=()=>openObjectByNumber(btn.dataset.n));
   }
   sel.onchange=render;render();
 }
@@ -236,11 +248,9 @@ async function init(){
     for(const r of MFC){
       const [n,team,district,address]=r,p=COORDS[n];
       if(!p)continue;
-      const item={n,team,district,address},x=objectInfo(n),kind=objectTypeKey(n),badge=TYPE_BADGES[kind]||"О",low=x.confidence==="low";
-      const markerHtml='<div class="mfc-marker '+(low?"low":"")+'" style="background:'+COLORS[team]+'"><span>'+n+'</span><span class="kind" title="'+kind+'">'+badge+'</span></div>';
-      const markerLayout=ymaps.templateLayoutFactory.createClass(markerHtml);
-      const pm=new ymaps.Placemark(p,{hintContent:"№"+n+" · "+district+" · "+(x.type||"")},{iconLayout:markerLayout,iconOffset:[-16,-16],zIndex:100});
-      pm.events.add("click",()=>cardFor(item,p));
+      const item={n,team,district,address},x=objectInfo(n),kind=objectTypeKey(n);
+      const pm=new ymaps.Placemark(p,{iconContent:String(n),hintContent:"№"+n+" · "+district+" · "+(x.type||"")},{preset:"islands#circleIcon",iconColor:COLORS[team],zIndex:100});
+      pm.events.add("click",()=>openObjectByNumber(n));
       groups[team].push(pm);
       markerRecords.push({pm,item,p,kind,visible:true});
       map.geoObjects.add(pm);
