@@ -9,13 +9,12 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Optimize all 51 sites into four balanced road-time routes
+      - name: Optimize four routes by road time, balance and local continuity
         shell: bash
         run: |
-          cat > /tmp/opt4.py <<'PY'
+          cat > /tmp/opt.py <<'PY'
           import re,json,urllib.request,random,statistics
           random.seed(20260928)
-
           m=open("mfc-map/map.js",encoding="utf-8").read()
           d=open("mfc-map/data.js",encoding="utf-8").read()
           block=re.search(r'const COORDS=\{(.*?)\};',m,re.S).group(1)
@@ -23,61 +22,47 @@ jobs:
           arr=json.loads(re.search(r'window\.MFC=(\[.*\]);\s*$',d,re.S).group(1))
           nums=[r[0] for r in arr]; bynum={r[0]:r for r in arr}; idx={n:i for i,n in enumerate(nums)}
           coordstr=";".join(f"{coords[n][1]},{coords[n][0]}" for n in nums)
-          req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration",headers={"User-Agent":"MFC-four-route-optimizer/1.0"})
+          req=urllib.request.Request("https://router.project-osrm.org/table/v1/driving/"+coordstr+"?annotations=duration",headers={"User-Agent":"MFC-4-contiguous-optimizer/1.0"})
           with urllib.request.urlopen(req,timeout=120) as r:data=json.load(r)
           raw=data["durations"]
           S={(a,b):((raw[idx[a]][idx[b]]+raw[idx[b]][idx[a]])/120 if a!=b else 0.0) for a in nums for b in nums}
-
           cache={}
           def met(mem):
               key=tuple(sorted(mem))
               if key in cache:return cache[key]
               vals=sorted(S[a,b] for i,a in enumerate(mem) for b in mem[i+1:])
               n=len(mem);mean=sum(vals)/len(vals);p90=vals[int(.9*(len(vals)-1))];mx=max(vals);load=n*mean
-              cache[key]=(n,mean,p90,mx,load)
-              return cache[key]
-
+              cache[key]=(n,mean,p90,mx,load);return cache[key]
+          # Local-neighbor edges. Splitting very close sites is operationally undesirable.
+          edges=[]
+          for i,a in enumerate(nums):
+              near=sorted((S[a,b],b) for b in nums if b!=a)[:4]
+              for t,b in near:
+                  if a<b: edges.append((a,b,t))
+          edges=list({(a,b):t for a,b,t in edges}.items())
+          edges=[(a,b,t) for (a,b),t in edges]
           def obj(groups):
-              ms=[met(g) for g in groups]
-              loads=[x[4] for x in ms]
-              # Balance technician road burden, then compactness/tails.
-              return sum(loads)+4.5*statistics.pstdev(loads)+1.15*max(loads)+.40*sum(x[2] for x in ms)+.20*sum(x[3] for x in ms)
-
-          def valid(groups):
-              return len(groups)==4 and sum(map(len,groups))==51 and all(9<=len(g)<=15 for g in groups)
-
-          def assign(seeds):
-              g=[[s] for s in seeds]
-              left=[n for n in nums if n not in seeds]
-              hard=[]
-              for n in left:
-                  ds=sorted(S[n,s] for s in seeds);hard.append((ds[1]-ds[0],n))
-              for _,n in sorted(hard,reverse=True):
-                  choices=sorted((S[n,seeds[k]],k) for k in range(4) if len(g[k])<15)
-                  g[choices[0][1]].append(n)
-              for t in range(4):
-                  while len(g[t])<9:
-                      best=None
-                      for q in range(4):
-                          if q==t or len(g[q])<=9:continue
-                          for n in g[q]:
-                              to=sum(S[n,x] for x in g[t])/len(g[t])
-                              fr=sum(S[n,x] for x in g[q] if x!=n)/max(1,len(g[q])-1)
-                              cand=(to-fr,q,n)
-                              if best is None or cand<best:best=cand
-                      if best is None:break
-                      _,q,n=best;g[q].remove(n);g[t].append(n)
-              return g
-
-          def refine(groups,passes=20):
-              g=[list(x) for x in groups];cur=obj(g)
+              ms=[met(g) for g in groups]; loads=[x[4] for x in ms]
+              team={}
+              for k,g in enumerate(groups):
+                  for n in g: team[n]=k
+              cut=0
+              for a,b,t in edges:
+                  if team[a]!=team[b]:
+                      cut += max(0,12-t)
+              return (sum(loads)+4*statistics.pstdev(loads)+1.05*max(loads)
+                      +.35*sum(x[2] for x in ms)+.15*sum(x[3] for x in ms)
+                      +3.0*cut)
+          def valid(g):return len(g)==4 and sum(map(len,g))==51 and all(9<=len(x)<=16 for x in g)
+          def refine(g,passes=24):
+              g=[list(x) for x in g];cur=obj(g)
               for _ in range(passes):
                   best=(cur,None)
                   for i in range(4):
                       if len(g[i])<=9:continue
                       for n in list(g[i]):
                           for j in range(4):
-                              if i==j or len(g[j])>=15:continue
+                              if i==j or len(g[j])>=16:continue
                               gg=[list(x) for x in g];gg[i].remove(n);gg[j].append(n)
                               v=obj(gg)
                               if v<best[0]-1e-7:best=(v,("m",i,j,n))
@@ -97,37 +82,54 @@ jobs:
                       _,i,j,a,b=mv;g[i].remove(a);g[j].remove(b);g[i].append(b);g[j].append(a)
                   cur=best[0]
               return g,cur
-
-          starts=[]
-          # Current 5-route data collapsed in several ways to seed practical 4-route solutions.
-          cur={t:[r[0] for r in arr if r[1]==t] for t in ["М1","М2","М3","М4","М5"]}
-          merges=[("М1","М5"),("М1","М3"),("М3","М4"),("М2","М3"),("М2","М5")]
-          for a,b in merges:
-              groups=[]
-              used=set([a,b])
-              groups.append(cur[a]+cur[b])
-              for t in ["М1","М2","М3","М4","М5"]:
-                  if t not in used:groups.append(list(cur[t]))
-              if valid(groups):starts.append(groups)
-
-          for start in nums[::2]:
+          def assign(seeds):
+              g=[[s] for s in seeds]
+              left=[n for n in nums if n not in seeds]
+              for n in sorted(left,key=lambda n:min(S[n,s] for s in seeds),reverse=True):
+                  opts=sorted((S[n,seeds[k]],k) for k in range(4) if len(g[k])<16)
+                  g[opts[0][1]].append(n)
+              for t in range(4):
+                  while len(g[t])<9:
+                      best=None
+                      for q in range(4):
+                          if q==t or len(g[q])<=9:continue
+                          for n in g[q]:
+                              to=sum(S[n,x] for x in g[t])/len(g[t])
+                              fr=sum(S[n,x] for x in g[q] if x!=n)/max(1,len(g[q])-1)
+                              cand=(to-fr,q,n)
+                              if best is None or cand<best:best=cand
+                      if best is None:break
+                      _,q,n=best;g[q].remove(n);g[t].append(n)
+              return g
+          current=[
+            [3,4,5,21,22,23,25,27,28,42,43,44,45,46],
+            [14,16,17,18,19,24,26,47,48,49],
+            [1,2,6,7,8,9,10,11,12,13,15,41],
+            [20,29,30,31,32,33,34,35,36,37,38,39,40,50,51],
+          ]
+          coherent=[
+            [1,2,3,5,6,7,8,9,10,41,43,45],
+            [11,12,13,14,15,16,17,18,19,24,47,48,49],
+            [4,20,21,22,23,25,26,27,28,42,44,46],
+            [29,30,31,32,33,34,35,36,37,38,39,40,50,51],
+          ]
+          starts=[current,coherent]
+          for start in nums[::3]:
               seeds=[start]
               while len(seeds)<4:
                   seeds.append(max((n for n in nums if n not in seeds),key=lambda n:min(S[n,s] for s in seeds)))
               g=assign(seeds)
               if valid(g):starts.append(g)
-          for _ in range(120):
+          for _ in range(80):
               g=assign(random.sample(nums,4))
               if valid(g):starts.append(g)
-
           sols=[];seen=set()
           for st in starts:
-              g,v=refine(st,passes=18)
+              g,v=refine(st)
               key=tuple(sorted(tuple(sorted(x)) for x in g))
               if key in seen:continue
               seen.add(key);sols.append((v,g))
           sols.sort(key=lambda x:x[0])
-
           def label(groups):
               inf=[]
               for g in groups:
@@ -137,13 +139,12 @@ jobs:
               north=max(rem,key=lambda x:x[1]);rem=[x for x in rem if x is not north]
               east=max(rem,key=lambda x:x[2]);south=[x for x in rem if x is not east][0]
               return {"М1":east[0],"М2":west[0],"М3":south[0],"М4":north[0]}
-
           for rank,(v,g) in enumerate(sols[:10],1):
               lab=label(g)
-              print(f"SOLUTION|{rank}|score={v:.2f}")
+              print(f"SOLUTION|{rank}|score={v:.1f}")
               for t in ["М1","М2","М3","М4"]:
                   mem=sorted(lab[t]);n,mean,p90,mx,load=met(mem)
                   print(f"CLUSTER|{rank}|{t}|n={n}|mean={mean:.1f}|p90={p90:.1f}|max={mx:.1f}|load={load:.1f}|members={','.join(map(str,mem))}")
                   print("NAMES|%d|%s|%s"%(rank,t,"; ".join(f"{n}:{bynum[n][2]}" for n in mem)))
           PY
-          python3 /tmp/opt4.py
+          python3 /tmp/opt.py
