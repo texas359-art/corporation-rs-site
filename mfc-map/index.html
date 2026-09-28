@@ -21,7 +21,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 .legend{font-size:11px;color:#667085;margin-top:7px}.route-zone-label{min-width:44px;height:32px;padding:0 10px;border:2px solid;border-radius:16px;background:rgba(255,255,255,.88);box-shadow:0 2px 10px #0002;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;letter-spacing:.3px;pointer-events:none;backdrop-filter:blur(2px)}.mfc-marker{position:relative;width:32px;height:32px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px #0004;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;cursor:pointer}.mfc-marker .kind{position:absolute;right:-6px;bottom:-6px;width:18px;height:18px;border-radius:50%;background:#fff;color:#344054;border:1px solid #d0d5dd;display:flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 1px 4px #0002}.mfc-marker.low{outline:2px solid #f59e0b;outline-offset:1px}
 
 
-.route-details-toggle{display:none;width:100%;margin-top:8px;border:1px solid #d0d5dd;border-radius:10px;padding:8px 10px;background:#fff;color:#344054;font-size:12px;font-weight:800;cursor:pointer}
+.route-addresses{display:grid;gap:3px;margin-top:5px}.route-address-link{display:block;width:100%;border:0;background:transparent;padding:4px 5px;border-radius:7px;text-align:left;color:#344054;font:inherit;line-height:1.3;cursor:pointer}.route-address-link:hover{background:#f2f4f7;color:#101828}.route-address-link:active{background:#e4e7ec}.route-details-toggle{display:none;width:100%;margin-top:8px;border:1px solid #d0d5dd;border-radius:10px;padding:8px 10px;background:#fff;color:#344054;font-size:12px;font-weight:800;cursor:pointer}
 @media(min-width:681px) and (max-width:1100px){
   .panel{width:min(500px,calc(100vw - 24px))}
   .card{width:min(520px,calc(100vw - 24px));right:12px}
@@ -61,7 +61,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 <body>
 <div id="map"></div>
 <div class="panel">
-  <div class="head"><div><div class="title">МФЦ · зоны обслуживания</div><div class="sub">Яндекс Карты · 51 объект · адаптивная версия · build 23</div></div><div class="head-actions"><a class="print-link" href="./print.html?v=3" target="_blank">Печать A3</a><button class="panel-toggle" id="panelToggle" aria-label="Свернуть панель">⌃</button></div></div>
+  <div class="head"><div><div class="title">МФЦ · зоны обслуживания</div><div class="sub">Яндекс Карты · 51 объект · адаптивная версия · build 24</div></div><div class="head-actions"><a class="print-link" href="./print.html?v=3" target="_blank">Печать A3</a><button class="panel-toggle" id="panelToggle" aria-label="Свернуть панель">⌃</button></div></div>
   <div class="filters" id="filters"></div>
   <div class="search-row"><input id="searchInput" placeholder="Поиск: №, район, улица, ТЦ/БЦ…" autocomplete="off"><button id="searchBtn">Найти</button></div>
   <div class="type-filters" id="typeFilters"></div>
@@ -71,8 +71,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
   <div class="legend">Маршруты выделены мягкими цветными зонами. Нажми на точку — тип здания, размещение МФЦ, парковка, доступ и особенности.</div>
 </div>
 <div class="card" id="card"><button class="close" id="closeCard">×</button><div id="cardBody"></div></div>
-<script src="./data.js?v=22"></script>
-<script src="./road-routes.js?v=22"></script>
-<script src="./object-info.js?v=22"></script>
-<script src="./map.js?v=22"></script>
+<script src="./data.js?v=24"></script>
+<script src="./road-routes.js?v=24"></script>
+<script src="./object-info.js?v=24"></script>
+<script src="./map.js?v=24"></script>
 </body></html>
