@@ -18,21 +18,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;ba
 .card.show{display:block}.card .close{position:absolute;right:10px;top:8px;border:0;background:#f2f4f7;border-radius:50%;width:30px;height:30px;font-size:18px}.card h2{font-size:17px;margin:0 38px 5px 0}.card p{font-size:13px;margin:4px 0;color:#344054}.check{margin-top:9px;padding-top:9px;border-top:1px solid #eaecf0;font-size:12px}.ok{color:#15803d}.warn{color:#b45309}.medium{color:#a16207}.objgrid{margin-top:10px;border:1px solid #eaecf0;border-radius:12px;overflow:hidden}.objrow{display:grid;grid-template-columns:145px 1fr;border-bottom:1px solid #f0f2f5}.objrow:last-child{border-bottom:0}.objlabel{padding:7px 9px;background:#f8fafc;color:#667085;font-size:11px;font-weight:700}.objvalue{padding:7px 9px;color:#1d2939;font-size:12px;line-height:1.35}.confidence{margin-top:9px;padding:8px 10px;background:#f8fafc;border-radius:10px;font-size:12px}.coord{margin-top:9px!important;color:#667085!important}@media(max-width:540px){.objrow{grid-template-columns:115px 1fr}}
 .pin{width:34px;height:34px;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 2px 8px #0005;cursor:pointer}
 .pin span{transform:rotate(45deg);color:#fff;font-weight:900;font-size:12px}
-.legend{font-size:11px;color:#667085;margin-top:7px}
+.legend{font-size:11px;color:#667085;margin-top:7px}.route-zone-label{min-width:44px;height:32px;padding:0 10px;border:2px solid;border-radius:16px;background:rgba(255,255,255,.88);box-shadow:0 2px 10px #0002;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;letter-spacing:.3px;pointer-events:none;backdrop-filter:blur(2px)}
 @media(max-width:680px){.panel{max-width:none}.card{max-width:none}.title{font-size:16px}.filters button{padding:7px 10px}}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div class="panel">
-  <div class="head"><div><div class="title">МФЦ · зоны обслуживания</div><div class="sub">Яндекс Карты · 51 объект · 4 маршрута · здания, доступ, парковка · build 19</div></div></div>
+  <div class="head"><div><div class="title">МФЦ · зоны обслуживания</div><div class="sub">Яндекс Карты · 51 объект · 4 зоны обслуживания · здания, доступ, парковка · build 20</div></div></div>
   <div class="filters" id="filters"></div>
   <div class="status" id="status">Загружаю Яндекс Карты…</div>
-  <div class="legend">Нажми на точку — тип здания, размещение МФЦ, этажи, парковка, доступ и особенности.</div>
+  <div class="legend">Маршруты выделены мягкими цветными зонами. Нажми на точку — тип здания, размещение МФЦ, парковка, доступ и особенности.</div>
 </div>
 <div class="card" id="card"><button class="close" id="closeCard">×</button><div id="cardBody"></div></div>
-<script src="./data.js?v=19"></script>
-<script src="./road-routes.js?v=19"></script>
-<script src="./object-info.js?v=19"></script>
-<script src="./map.js?v=19"></script>
+<script src="./data.js?v=20"></script>
+<script src="./road-routes.js?v=20"></script>
+<script src="./object-info.js?v=20"></script>
+<script src="./map.js?v=20"></script>
 </body></html>
